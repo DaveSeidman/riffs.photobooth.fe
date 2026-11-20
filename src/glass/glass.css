@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600&display=swap');
+:root { color-scheme: light; font-family: 'DM Sans', sans-serif; color: #27252d; background: #f5f3f0; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.glass-lab { --line: #dcd9d4; min-height: 100svh; padding: 0 3.5vw; }
+.glass-lab button, .glass-lab input { font: inherit; }
+.glass-lab button { cursor: pointer; color: inherit; border: 1px solid var(--line); background: transparent; border-radius: 4px; padding: 10px 15px; transition: background .2s; }
+.glass-lab button:hover { background: #e8e4e0; }
+.glass-lab button:focus-visible, .glass-lab a:focus-visible, .glass-lab input:focus-visible { outline: 2px solid #7c61a8; outline-offset: 4px; }
+.glass-lab button:disabled { opacity: .5; cursor: wait; }
+.glass-header { height: 100px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); gap: 20px; }
+.glass-wordmark { font: 32px Georgia, serif; letter-spacing: -2px; color: inherit; text-decoration: none; display: grid; text-align: center; }
+.glass-wordmark span { font: 8px 'DM Sans',sans-serif; letter-spacing: 4px; margin-top: 3px; padding-left: 4px; }
+.glass-project, .glass-edition, .glass-eyebrow, .glass-footer, .glass-stage-heading, .glass-stage-caption { font-size: 10px; letter-spacing: .14em; font-weight: 500; }
+.glass-edition { color: #827d87; }
+.glass-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 5vw; max-width: 1600px; margin: 0 auto; padding: 36px 0 40px; }
+.glass-stage-column { min-width: 0; }
+.glass-stage-heading { display: flex; justify-content: space-between; margin-bottom: 16px; color: #69646f; }
+.glass-stage-heading span:first-child { display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+.glass-stage-heading i { width: 6px; height: 6px; border-radius: 50%; background: #a09baf; }
+.glass-stage-heading .is-live { background: #60865a; box-shadow: 0 0 0 3px #60865a18; }
+.glass-stage { position: relative; background: #d8d0e2; height: clamp(420px, 68vh, 850px); border-radius: 8px; overflow: hidden; }
+.glass-stage canvas { display: block; }
+.glass-stage-caption { position: absolute; bottom: 22px; left: 24px; pointer-events: none; color: #fff; text-shadow: 0 1px 6px #0004; font-size: 9px; }
+.glass-lab .glass-compare { position: absolute; right: 18px; top: 18px; background: #f6f4f0c9; border-color: #ffffff70; backdrop-filter: blur(12px); font-size: 11px; }
+.glass-source-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; align-items: center; }
+.glass-source-actions button { font-size: 12px; padding: 12px 16px; }
+.glass-source-actions .glass-primary { color: #fff; background: #302b3b; border-color: #302b3b; min-width: 165px; display: flex; justify-content: space-between; gap: 25px; }
+.glass-source-actions .glass-primary:hover { background: #53445f; }
+.glass-source-actions .glass-save { margin-left: auto; border: 0; }
+.glass-camera-note { font-size: 11px; color: #79737f; line-height: 1.7; max-width: 70ch; }
+.glass-controls { padding-top: 0; }
+.glass-eyebrow { color: #84778e; font-size: 9px; }
+.glass-intro h1 { font: 400 42px/1.04 Georgia,serif; letter-spacing: -1.5px; margin: 18px 0 15px; }
+.glass-intro h1 em { color: #85708e; font-weight: 400; }
+.glass-intro p { color: #7b7480; font-size: 12px; line-height: 1.7; max-width: 29ch; margin: 0 0 25px; }
+.glass-control-group { border-top: 1px solid var(--line); padding: 17px 0 4px; margin-top: 14px; }
+.glass-control-group h2 { font-size: 12px; font-weight: 600; margin: 0 0 17px; }
+.glass-group-title { display: flex; align-items: baseline; justify-content: space-between; }
+.glass-group-title button { padding: 0; border: 0; font-size: 10px; color: #8b7a97; }
+.glass-slider { display: block; margin: 0 0 12px; font-size: 11px; color: #6e6675; }
+.glass-slider > span { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.glass-slider output { font-size: 10px; font-variant-numeric: tabular-nums; color: #8b8194; }
+.glass-slider input { display: block; width: 100%; height: 12px; margin: 0; cursor: pointer; accent-color: #8a739c; }
+.glass-tints { display: flex; align-items: center; gap: 5px; margin: 15px 0 7px; font-size: 10px; color: #6e6675; }
+.glass-tints > span { margin-right: auto; }
+.glass-tints button { display: flex; align-items: center; gap: 5px; padding: 5px 6px; border: 1px solid transparent; font-size: 9px; }
+.glass-tints button[aria-pressed=true] { border-color: #a698b1; }
+.glass-tints i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 1px solid #0002; }
+.glass-footer { border-top: 1px solid var(--line); padding: 20px 0; color: #89818c; display: flex; gap: 24px; justify-content: space-between; font-size: 9px; }
+.glass-footer a { color: inherit; text-decoration: none; }
+.glass-render-error { padding: 20px; display: grid; gap: 20px; font-size: 14px; }
+@media (min-width: 1500px) { .glass-layout { grid-template-columns: minmax(0,1fr) 340px; } .glass-controls { padding-top: 30px; } .glass-intro h1 { font-size: 50px; } }
+@media (max-width: 900px) { .glass-layout { grid-template-columns: minmax(0,1fr) 250px; gap: 25px; } .glass-intro h1 { font-size: 34px; } .glass-source-actions .glass-save { margin-left: 0; } }
+@media (max-width: 680px) { .glass-lab { padding: 0 18px; } .glass-header { height: 78px; } .glass-edition { display: none; } .glass-project { font-size: 8px; } .glass-layout { grid-template-columns: 1fr; padding-top: 24px; gap: 30px; } .glass-stage { height: 58svh; min-height: 380px; } .glass-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; } .glass-intro { grid-column: 1 / -1; } .glass-intro h1 br { display: none; } .glass-intro p { max-width: 48ch; } .glass-footer { flex-wrap: wrap; font-size: 8px; } .glass-source-actions button { padding: 11px; font-size: 11px; } .glass-source-actions .glass-primary { min-width: 145px; } .glass-tints { flex-wrap: wrap; } .glass-tints > span { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .glass-lab * { transition: none !important; } }

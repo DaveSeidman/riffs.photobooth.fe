@@ -1,0 +1,703 @@
+// Keep the printed stamp artwork, while sizing the composition to the viewport.
+html, body, #root { height: 100%; min-height: 100%; background: #121212; }
+#root { height: 100dvh; }
+button, select, input { touch-action: manipulation; }
+.booth--mode-lunar {
+  width: 100%; height: 100%; min-height: 540px;
+  --stage-width: min(72vw, 51dvh, calc((83dvh - var(--stage-top) - 16px) / 1.21212));
+  --stage-left: calc((100% - var(--stage-width)) / 2);
+  --header-top: clamp(20px, 3.5dvh, 40px);
+  --logo-height: clamp(22px, 4dvh, 40px);
+  --title-height: calc(var(--type-size) * 2.2 + 4px);
+  --header-gap: clamp(16px, 2.5dvh, 28px);
+  --stage-top: calc(var(--title-top) + var(--title-height) + clamp(12px, 2dvh, 24px));
+  --image-size: calc(var(--stage-width) * .91515);
+  --stamp-inset: calc(var(--stage-width) * .04242);
+  --title-top: calc(var(--header-top) + var(--logo-height) + var(--header-gap)); --title-left: 0%; --title-width: 100%;
+  --actions-top: 85%; --actions-left: 8%; --actions-width: 84%;
+  --type-size: clamp(34px, 6.2vw, 80px);
+  .thesis-chrome__wordmark { left: 50%; top: calc(max(var(--header-top), env(safe-area-inset-top)) + 20px); transform: translateX(-50%); width: clamp(120px, 22vw, 210px); height: var(--logo-height); object-fit: contain; }
+  .thesis-chrome__brooklyn { inset: 68% 0 0; }
+  h1 { left: var(--title-left); top: var(--title-top); width: var(--title-width); padding: 0 16px; height: var(--title-height); align-content: center; gap: 4px 12px; font-size: var(--type-size); line-height: 1.08; }
+  h1 .thesis-italic { font-size: .9em; }
+  .primary-button, .secondary-button, .shutter-button {
+    width: min(100%, 300px); height: clamp(52px, 7dvh, 76px); padding: 8px 14px;
+    font-size: clamp(25px, 3.8vw, 42px); line-height: 1.15;
+  }
+  .camera { left: calc(var(--stage-left) + var(--stamp-inset)); top: calc(var(--stage-top) + var(--stamp-inset)); width: var(--image-size); height: var(--image-size); overflow: hidden; }
+  .camera__frame { position: absolute; inset: 0; overflow: hidden; transform: scaleX(-1); }
+  .camera .camera__frame video { position: absolute; max-width: none; transform: none; }
+  &.booth--attract::before, &.booth--camera::before, &.booth--countdown::before, &.booth--flash::before, &.booth--error:has(.capture-panel)::before,
+  .capture-review__stage, .processing__copy, .flow-error__portrait, .result-hero {
+    left: var(--stage-left); top: var(--stage-top); width: var(--stage-width); height: calc(var(--stage-width) * 1.21212);
+  }
+  // Trim the unused lower camera mat, retaining a visibly larger bottom margin.
+  &.booth--attract::before, &.booth--camera::before, &.booth--countdown::before, &.booth--flash::before,
+  &.booth--error:has(.capture-panel)::before {
+    left: var(--stage-left);
+    width: var(--stage-width);
+    height: calc(var(--stage-width) * 1.08);
+  }
+  .attract-panel .primary-button, .capture-panel__actions, .capture-review__actions, .flow-error__actions, .results__actions {
+    left: var(--actions-left); top: var(--actions-top); width: var(--actions-width); display: flex; justify-content: center; gap: 12px;
+  }
+  .capture-review__actions > button, .flow-error__actions > button { width: calc((100% - 12px) / 2); }
+  .attract-panel .primary-button { left: calc(var(--actions-left) + (var(--actions-width) - min(var(--actions-width), 300px)) / 2); width: min(var(--actions-width), 300px); }
+  .capture-panel .error-message { left: 8%; top: 73%; width: 84%; padding: 12px; font-size: 20px; line-height: 1.3; }
+  .countdown__wash, .countdown strong { left: calc(var(--stage-left) + var(--stamp-inset)); top: calc(var(--stage-top) + var(--stamp-inset)); width: var(--image-size); height: var(--image-size); }
+  .countdown strong { font-size: calc(var(--stage-width) * .65); }
+  .capture-review__stage img, .flow-error__portrait img, .processing__art, .processing__copy::before, .result-hero__images {
+    left: 4.242%; top: 3.5%; width: 91.515%; height: 75.5%;
+  }
+  .stamp-caption, .flow-error__portrait p, .result-hero figcaption {
+    left: 4.242%; top: 79%; width: 91.515%; height: 15%; font-size: clamp(23px, 3.3vw, 36px); line-height: 1.15;
+  }
+  .processing__copy h1 { left: calc((var(--stage-width) - 100vw) / 2); top: calc(var(--title-top) - var(--stage-top)); width: 100vw; font-size: var(--type-size); }
+  .processing__copy { position: absolute; }
+  .progress { left: 4.242%; top: 78.25%; width: 91.515%; }
+  .progress__track, .progress__track span { height: 4px; }
+  .flow-error h1 em { font-size: .7em; }
+  .flow-error__portrait p { font-size: clamp(20px, 2.6vw, 30px); }
+  .style-picker__grid { left: 6%; right: 6%; top: var(--stage-top); height: calc(82dvh - var(--stage-top)); gap: clamp(12px, 2vw, 28px); }
+  .style-card { padding: 5%; display: flex; flex-direction: column; gap: 10px; }
+  .style-card img { position: static; width: 100%; height: 59%; flex: none; }
+  .style-card__copy { position: static; width: 100%; gap: 6px; }
+  .style-card strong { font-size: clamp(26px, 4vw, 44px); line-height: 1.05; }
+  .style-card__copy > span { font-size: clamp(18px, 2.4vw, 26px); line-height: 1.15; }
+  .style-picker__retake { left: calc(50% - 130px); top: 86%; width: 260px; }
+  &.booth--results, &.booth--connected, &.booth--resetting { --stage-width: min(64vw, 43dvh, calc((71dvh - var(--stage-top) - 16px) / 1.21212)); }
+  .share-card { left: 12%; top: 71%; width: 76%; height: 16%; padding: 12px; gap: 16px; }
+  .share-card__qr { width: min(14dvh, 120px); height: min(14dvh, 120px); padding: 6px; }
+  .share-card h2 { font-size: clamp(29px, 4vw, 46px); line-height: 1.05; }
+  .share-card__instruction, .share-card__connection { font-size: clamp(17px, 2.2vw, 24px); line-height: 1.15; margin: 8px 0 0; }
+  .share-card > div:last-child { transform: none; }
+  .results__actions { top: 90%; }
+  .results__actions .secondary-button { width: 45%; font-size: clamp(25px, 3.8vw, 42px); }
+  .results__reset-timer { width: 45%; height: clamp(52px, 7dvh, 76px); font-size: clamp(15px, 2.1vw, 21px); line-height: 1.2; padding: 10px 16px; gap: 8px; }
+  .timeout-line { height: 3px; }
+  .handoff-away { gap: 16px; font-size: clamp(24px, 4vw, 48px); line-height: 1.1; }
+  .handoff-away__star { width: 40px; height: 40px; }
+}
+@media (min-aspect-ratio: 1/1) {
+  .booth--mode-lunar {
+    --stage-width: min(42vw, 63dvh); --stage-left: 6%; --stage-top: 16%;
+    --title-top: 32%; --title-left: 52%; --title-width: 44%;
+    --actions-top: 63%; --actions-left: 53%; --actions-width: 42%;
+    --type-size: clamp(38px, 5.5vw, 80px);
+    h1 { height: auto; }
+    .thesis-chrome__wordmark { left: 74%; top: calc(12% + 20px); width: clamp(130px, 18vw, 240px); }
+    .capture-panel .error-message { left: 53%; top: 49%; width: 42%; }
+    .processing__copy h1 { left: 46vw; top: 21%; width: 44vw; }
+    .style-picker h1 { left: 4%; top: 6%; width: 70%; font-size: clamp(34px, 4.8vw, 60px); }
+    .style-picker__grid { top: 23%; height: 61%; left: 4%; right: 4%; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: 1fr; gap: 16px; }
+    .style-card strong { font-size: clamp(25px, 3.4vw, 42px); }
+    .style-picker__retake { top: 88%; height: 48px; }
+    &.booth--results, &.booth--connected, &.booth--resetting { --stage-width: min(42vw, 63dvh); --stage-top: 16%; --title-top: 23%; }
+    .share-card { left: 53%; top: 43%; width: 42%; height: 28%; }
+    .share-card__qr { width: min(16vw, 23dvh); height: min(16vw, 23dvh); }
+    .share-card h2 { font-size: clamp(29px, 3.8vw, 46px); }
+    .results__actions { top: 78%; }
+  }
+}
+@media (max-width: 480px) {
+  .booth--mode-lunar {
+    --stage-width: min(84vw, 51dvh, calc((83dvh - var(--stage-top) - 16px) / 1.21212));
+    .style-card__copy > span { display: none; }
+    .share-card { left: 5%; width: 90%; }
+    .share-card__qr { width: 100px; height: 100px; }
+  }
+}
+@media (max-height: 539px) {
+  html, body, #root { overflow: auto; }
+  .booth--mode-lunar { height: 540px; --stage-width: min(40vw, 300px); }
+}
+.developer-controls { position: fixed; z-index: 110; right: max(12px, env(safe-area-inset-right)); top: max(12px, env(safe-area-inset-top)); width: min(360px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow: auto; background: #161616; border-radius: 8px; }
+.developer-controls[hidden] { display: none; }
+
+// Two choices stack comfortably on a portrait iPad and sit side by side in landscape.
+.booth--mode-lunar .style-picker__grid--two {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  .style-card { flex-direction: row; align-items: center; padding: 5%; gap: 6%; }
+  .style-card img { width: auto; height: 100%; max-width: 48%; aspect-ratio: 1; object-fit: cover; }
+  .style-card__copy { flex: 1; }
+}
+@media (orientation: landscape) and (min-width: 700px) {
+  .booth--mode-lunar .style-picker__grid--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: 1fr;
+    .style-card { flex-direction: column; }
+    .style-card img { width: 100%; max-width: 100%; height: 65%; }
+  }
+}
+
+// The live image and its mat move together as one photo, preserving the crop.
+.booth--mode-lunar {
+  --photo-ease: cubic-bezier(.22, 1.12, .36, 1);
+  &.booth--attract::before, &.booth--camera::before, &.booth--countdown::before,
+  &.booth--flash::before, &.booth--error:has(.capture-panel)::before { content: none; }
+  .camera-photo {
+    position: absolute; z-index: 2;
+    --photo-width: var(--stage-width);
+    left: calc((100% - var(--photo-width)) / 2); top: 50%;
+    width: var(--photo-width); height: calc(var(--photo-width) * 1.08);
+    transform: translateY(-50%);
+    transition: opacity 350ms ease;
+    .camera {
+      left: 4.242%; top: 0; margin-top: 4.242%;
+      width: 91.516%; height: auto; aspect-ratio: 1;
+    }
+  }
+  .camera-photo__object {
+    position: absolute; inset: 0;
+    background: url('/thesis/shapes/stamp-main.svg') center / 100% 100% no-repeat;
+    transform: perspective(1200px) translateZ(0) rotateX(0);
+    transform-origin: 50% 50%;
+  }
+  .camera-photo[data-depth="back"] { --photo-width: calc(var(--stage-width) * .82); }
+  .camera-photo[data-depth="closeup"] {
+    --photo-width: min(calc(100vw / .91516), calc((100dvh - 2 * (var(--title-top) + var(--title-height) + 16px)) / 1.08));
+  }
+  .camera-photo--muted { opacity: 0; pointer-events: none; }
+  .attract-panel, .capture-panel, .countdown { z-index: 3; }
+  .attract-panel.is-leaving {
+    pointer-events: none;
+    h1 { display: none; }
+    .primary-button { animation: booth-start-out 260ms ease-in forwards; }
+  }
+  .capture-panel .shutter-button {
+    animation: booth-shutter-in 500ms 300ms var(--photo-ease) both;
+  }
+}
+@media (orientation: portrait) {
+  .booth--mode-lunar {
+    &.booth--camera, &.booth--countdown, &.booth--flash,
+    &.booth--error:has(.capture-panel) {
+      --title-height: calc(var(--type-size) * 1.12 + 4px);
+      --actions-top: auto;
+      .capture-panel__actions { top: auto; bottom: max(20px, env(safe-area-inset-bottom)); }
+      .capture-panel .error-message { z-index: 4; top: auto; bottom: 110px; }
+    }
+  }
+}
+@media (min-aspect-ratio: 1/1) {
+  .booth--mode-lunar .camera-photo {
+    left: calc(27vw - var(--photo-width) / 2);
+    &[data-depth="closeup"] { --photo-width: min(48vw, 70dvh); }
+  }
+}
+@keyframes booth-start-out {
+  to { opacity: 0; transform: perspective(600px) translateY(75px) rotateX(-25deg) scale(.9); }
+}
+@keyframes booth-shutter-in {
+  from { opacity: 0; transform: perspective(600px) translateY(60px) rotateX(18deg) scale(.92); }
+  to { opacity: 1; transform: perspective(600px) translateY(0) rotateX(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .booth--mode-lunar {
+    .camera-photo { transition-duration: 0ms; animation: none !important; }
+    .attract-panel.is-leaving .primary-button { animation-duration: 1ms; }
+    .capture-panel .shutter-button { animation-duration: 1ms; animation-delay: 0ms; }
+  }
+}
+
+
+
+// Use the original complete stamp artwork so cutouts stay attached while scaling.
+.stamp-frame {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  border: 0;
+  background: url('/thesis/shapes/stamp-main.svg') center / 100% 100% no-repeat;
+}
+
+.booth--mode-lunar {
+  .camera-photo__object, .capture-review__stage, .processing__copy, .flow-error__portrait,
+  .result-hero, .share-card, .style-card { isolation: isolate; background: none; }
+  .share-card { border: 0; border-image: none; }
+  .style-card strong { color: var(--cyan); }
+  .camera-photo--muted { visibility: hidden; transition: none; }
+  .camera--captured .camera__frame { visibility: hidden; }
+  .camera__still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .camera .camera__countdown {
+    position: absolute; z-index: 5; inset: 0;
+    display: grid; place-items: center; margin: 0; padding: 0;
+    font: 400 clamp(88px, calc(var(--photo-width) * .28), 220px)/1 var(--sans);
+    color: var(--cyan); background: rgb(0 0 0 / .42);
+    text-shadow: 0 3px 24px #0009;
+    animation: polaroid-count 1s cubic-bezier(.16, 1, .3, 1) both;
+  }
+  .camera-photo__caption {
+    position: absolute; left: 4.242%; right: 4.242%; top: 90%; margin: 0;
+    color: var(--ink); font: italic 400 clamp(18px, 2.8vw, 30px)/1.15 var(--serif);
+    animation: polaroid-caption 900ms 900ms both;
+  }
+  .camera-photo__sheen {
+    position: absolute; z-index: 4; left: 4.242%; top: 0; margin-top: 4.242%;
+    width: 91.516%; aspect-ratio: 1; overflow: hidden; pointer-events: none; opacity: 0;
+    background: linear-gradient(115deg, transparent 20%, #c5e5ff24 35%, #ffe5fc44 44%, #ffffff65 49%, #d7fff42e 56%, transparent 72%);
+    background-size: 280% 100%; mix-blend-mode: screen;
+  }
+  .capture-review__actions { animation: booth-shutter-in 500ms 1300ms ease-out both; }
+  &.booth--flash .camera { animation: polaroid-expose 320ms cubic-bezier(.45, 0, .8, .5) both; }
+  .camera-photo[data-developing] {
+    .camera-photo__scale { transition-duration: 1600ms; }
+    .camera { animation: polaroid-develop 4200ms cubic-bezier(.22, .65, .3, 1) both; }
+    .camera-photo__sheen { animation: polaroid-sheen 3200ms 400ms ease-in-out both; }
+  }
+}
+.takeaway-page .takeaway-page__portrait { position: relative; isolation: isolate; background: none; }
+@keyframes polaroid-count {
+  from { transform: scale(1.12); }
+  to { transform: scale(1); }
+}
+@keyframes polaroid-expose {
+  0% { filter: brightness(1) contrast(1) saturate(1) blur(0); }
+  28% { filter: brightness(1.15) contrast(.98) saturate(.95) blur(.1px); }
+  60% { filter: brightness(1.8) contrast(.65) brightness(1.3) saturate(.5) blur(.35px); }
+  85% { filter: brightness(2) contrast(.18) brightness(5) saturate(.05) blur(.8px); }
+  100% { filter: brightness(1) contrast(.06) brightness(12) saturate(0) blur(.8px); }
+}
+@keyframes polaroid-develop {
+  0% { filter: brightness(1) contrast(.06) brightness(12) saturate(0) blur(.8px); }
+  24% { filter: brightness(1) contrast(.3) brightness(3) saturate(.12) blur(.5px); }
+  62% { filter: brightness(1) contrast(.72) brightness(1.45) saturate(.65) blur(.15px); }
+  100% { filter: brightness(1) contrast(1) brightness(1) saturate(1) blur(0); }
+}
+@keyframes polaroid-sheen {
+  0% { opacity: 0; background-position: 100% 0; }
+  25% { opacity: .5; }
+  68% { opacity: .25; }
+  100% { opacity: 0; background-position: 0 0; }
+}
+@keyframes polaroid-caption { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .booth--mode-lunar {
+    .camera .camera__countdown, .camera-photo[data-developing] .camera,
+    &.booth--flash .camera, .camera-photo__caption, .capture-review__actions { animation: none; }
+    .camera-photo[data-developing] .camera-photo__sheen { animation: none; }
+  }
+}
+
+.booth--mode-lunar {
+  .style-card > .stamp-frame { background-image: url('/thesis/shapes/stamp-card.svg'); }
+  .share-card > .stamp-frame { background-image: url('/thesis/shapes/stamp-qr.svg'); }
+  .results__reset-timer .seconds-unit { text-transform: none; }
+  .share-card { width: var(--stage-width); }
+  .capture-review { pointer-events: none; }
+  .capture-review__actions { pointer-events: auto; }
+  .camera-photo__actions {
+    position: absolute; z-index: 8; left: 0; right: 0; top: calc(100% - 1px);
+    display: flex; gap: 0; height: clamp(68px, 7.5dvh, 90px);
+    pointer-events: auto;
+    > .ticket-button { width: 100%; }
+    > .ticket-button.is-leaving { position: absolute; inset: 0; animation: booth-start-out 260ms ease-in forwards; }
+    > .shutter-button { animation: none; }
+    &:has(> .shutter-button) { animation: booth-shutter-in 500ms 300ms var(--photo-ease) both; }
+  }
+  .ticket-actions { display: flex; width: 100%; height: 100%; gap: 0; }
+  .ticket-actions > .ticket-button { flex: 1; width: 50%; }
+  .ticket-button {
+    position: relative; height: 100%; min-height: 68px; max-width: none; margin: 0;
+    border-radius: 0; touch-action: none; user-select: none; -webkit-user-select: none;
+    -webkit-touch-callout: none; overflow: visible;
+    font-size: clamp(22px, 3.3vw, 38px); line-height: 1.1;
+    transform-origin: 50% 0; transition: none;
+    &::after {
+      content: ''; position: absolute; left: 4px; right: 4px; top: 0;
+      border-top: 1px dashed currentColor; opacity: .3;
+      clip-path: inset(0 0 0 calc(var(--tear-progress, 0) * 100%));
+    }
+    &[data-pulling] { z-index: 4; filter: drop-shadow(0 12px 12px #0005); cursor: grabbing; }
+    &:active:not(:disabled) { transform: none; }
+  }
+  .camera-photo[data-developing] .camera-photo__actions { animation: polaroid-caption 600ms 1100ms both; }
+}
+.takeaway-page__portrait > .stamp-frame { background-image: url('/thesis/shapes/stamp-phone.svg'); }
+@media (orientation: portrait) {
+  .booth--mode-lunar .share-card { left: var(--stage-left); }
+}
+@media (max-width: 480px) {
+  .booth--mode-lunar .share-card {
+    height: auto; min-height: 100px; padding: 10px; gap: 10px;
+    h2 { font-size: 22px; }
+    .share-card__qr { width: 64px; height: 64px; }
+    .share-card__instruction { display: none; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .booth--mode-lunar .camera-photo__actions,
+  .booth--mode-lunar .camera-photo__actions > .ticket-button { animation: none !important; }
+}
+
+.booth--mode-lunar { .attract-panel, .capture-panel { pointer-events: none; } }
+
+// The finished portrait, scan card, and actions share one alignment column.
+.booth--mode-lunar .results__actions {
+  left: var(--stage-left); width: var(--stage-width); gap: 12px;
+  .secondary-button, .results__reset-timer { width: calc((100% - 12px) / 2); }
+}
+@media (min-aspect-ratio: 1/1) {
+  .booth--mode-lunar .results__actions { left: 53%; }
+}
+
+// Keep the ticket artwork and ink identical in every input state.
+.booth--mode-lunar .ticket-button {
+  --ticket-art: url('/thesis/shapes/btn-ink-700.svg');
+  --ticket-ink: var(--paper);
+  &.secondary-button { --ticket-art: url('/thesis/shapes/btn-cream-580.svg'); --ticket-ink: var(--ink); }
+  &, &:hover, &:active, &:hover:not(:disabled), &:active:not(:disabled) {
+    background: var(--ticket-art) center / 100% 100% no-repeat transparent;
+    color: var(--ticket-ink); filter: none;
+  }
+  &[data-pulling], &[data-pulling]:hover, &[data-pulling]:active { filter: drop-shadow(0 12px 12px #0005); }
+}
+
+// Fixed design geometry: frame 600px, full ticket 600px, paired tickets 300px.
+// Depth scales this entire object uniformly; no artwork is stretched to fit it.
+.booth--mode-lunar {
+  .camera-photo__scale {
+    --photo-width: 600px;
+    position: absolute; left: 50%; top: 50%; width: 600px; height: 648px;
+    margin-left: -300px; margin-top: -324px;
+    transform: scale(var(--photo-scale, 1)); transform-origin: center;
+    transition: transform 1000ms var(--photo-ease);
+  }
+  .camera-photo__object { width: 600px; height: 648px; }
+  .camera-photo__object > .stamp-frame { background-image: url('/thesis/shapes/photo-600.svg'); }
+  .camera-photo__actions { width: 600px; height: 88px; }
+  .camera-photo__actions .ticket-button { height: 88px; min-height: 88px; font-size: 32px; }
+  .camera-photo__actions > .ticket-button {
+    width: 600px; --ticket-art: url('/thesis/shapes/ticket-600-ink.svg');
+  }
+  .camera-photo__actions .ticket-actions { width: 600px; }
+  .camera-photo__actions .ticket-actions > .ticket-button {
+    flex: 0 0 300px; width: 300px; --ticket-art: url('/thesis/shapes/ticket-300-ink.svg');
+    &.secondary-button { --ticket-art: url('/thesis/shapes/ticket-300-cream.svg'); }
+  }
+  .camera-photo__caption { top: 91.5%; font-size: 28px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .booth--mode-lunar .camera-photo__scale { transition: none; }
+}
+
+.booth--mode-lunar .ticket-button {
+  isolation: isolate;
+  .ticket-button__label { position: relative; z-index: 1; pointer-events: none; }
+  .ticket-button__glow {
+    position: absolute; z-index: 0; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 100px 75px at var(--grab-x, 50%) var(--grab-y, 50%),
+      #d6f6ff60 0%, #9ce5f524 42%, transparent 100%);
+    -webkit-mask: var(--ticket-art) center / 100% 100% no-repeat;
+    mask: var(--ticket-art) center / 100% 100% no-repeat;
+    opacity: 0; transition: opacity 160ms ease;
+  }
+  &[data-illuminated] .ticket-button__glow { opacity: 1; }
+  &::after { z-index: 2; }
+}
+
+// One persistent Polaroid: normal geometry never depends on the current screen.
+.booth--mode-lunar {
+  --normal-photo-width: min(72vw, 45dvh);
+  --share-height: clamp(140px, 15dvh, 180px);
+  .camera-photo { --photo-width: var(--normal-photo-width); }
+  .camera-photo[data-depth="back"] { --photo-width: calc(var(--normal-photo-width) * .82); }
+  &.booth--results, &.booth--connected, &.booth--resetting { --stage-width: var(--normal-photo-width); }
+  .camera__still { z-index: 1; opacity: var(--image-opacity, 1); }
+  .camera[data-result-ready] .camera__still { z-index: 4; opacity: 1; transition: opacity 900ms ease; }
+  .camera[data-result-ready] .camera__still.is-away { opacity: 0; }
+  .camera > .processing__art--persistent { left: 0; top: 0; width: 100%; height: 100%; z-index: 2; }
+  .processing__art--persistent.is-complete { animation: storm-retire 1ms 900ms forwards; }
+  .camera-photo__object > .progress { left: 4.242%; width: 91.516%; top: calc(88.666% - 4px); z-index: 8; }
+  .processing, .style-picker, .results { pointer-events: none; }
+  .style-card, .share-card, .results__actions { pointer-events: auto; }
+  .camera-photo__actions:has(.polaroid-styles) { height: 168px; }
+  .polaroid-styles {
+    display: flex; width: 600px; height: 168px; gap: 0;
+    .style-card { flex: 0 0 300px; width: 300px; height: 168px; padding: 12px; gap: 12px; display: flex; flex-direction: row; align-items: center; }
+    .style-card > .stamp-frame { background-image: url('/thesis/shapes/style-300-left.svg'); }
+    .style-card:nth-child(2) > .stamp-frame { background-image: url('/thesis/shapes/style-300-right.svg'); }
+    .style-card img { width: 84px; height: 84px; max-width: none; position: static; flex: none; aspect-ratio: 1; object-fit: cover; }
+    .style-card__copy { position: static; width: auto; min-width: 0; flex: 1; gap: 12px; }
+    .style-card strong { color: var(--coral); font-size: 27px; line-height: 1.05; }
+    .style-card__copy > span { font-size: 18px; line-height: 1.15; display: block; }
+  }
+  .style-card strong { color: var(--coral); }
+  .style-card__copy { gap: 14px; }
+  .persistent-original { position: absolute; left: 0; top: 0; z-index: 5; width: 24%; height: auto; aspect-ratio: 1.25; object-fit: cover; border: 0 solid var(--paper); border-right-width: 8px; border-bottom-width: 8px; }
+  .persistent-handoff { z-index: 1; background: var(--paper); font-size: 32px; }
+}
+@keyframes storm-retire { to { visibility: hidden; } }
+@media (orientation: portrait) {
+  .booth--mode-lunar {
+    .share-card { left: calc((100% - var(--normal-photo-width)) / 2); width: var(--normal-photo-width); top: calc(50dvh + var(--normal-photo-width) * .54 + 12px); height: var(--share-height); }
+    .results__actions { left: calc((100% - var(--normal-photo-width)) / 2); width: var(--normal-photo-width); top: calc(50dvh + var(--normal-photo-width) * .54 + 24px + var(--share-height)); }
+  }
+}
+@media (min-aspect-ratio: 1/1) { .booth--mode-lunar { --normal-photo-width: min(42vw, 57dvh); } }
+@media (max-width: 480px) {
+  .booth--mode-lunar {
+    --normal-photo-width: min(72vw, 42dvh); --share-height: 100px;
+    .share-card { top: calc(50dvh + var(--normal-photo-width) * .54 + 8px); }
+    .results__actions { top: calc(50dvh + var(--normal-photo-width) * .54 + 16px + var(--share-height)); }
+  }
+}
+
+// Recede the same Polaroid; independent choice cards arrive on front planes.
+.booth--mode-lunar {
+  .camera-photo .camera, .camera-photo__object > .stamp-frame {
+    transition: filter 800ms ease, opacity 450ms ease;
+  }
+  .camera-photo[data-depth="back"] {
+    .camera, .camera-photo__object > .stamp-frame { filter: brightness(.5); }
+  }
+  .style-picker { z-index: 20; }
+  .style-choice-layout {
+    position: absolute; left: 50%; top: 50%;
+    width: min(86vw, 58dvh); height: min(90.3vw, 60.9dvh);
+    transform: translate(-50%, -50%); pointer-events: none;
+  }
+  .style-choice-deck {
+    position: absolute; left: 50%; top: 50%; width: 600px; height: 630px;
+    margin-left: -300px; margin-top: -315px;
+    transform: scale(var(--style-scale, 1)); transform-origin: center;
+    display: flex; flex-direction: column; gap: 30px;
+  }
+  .style-option-layer {
+    width: 600px; height: 300px; flex: none;
+    transform-origin: center; pointer-events: auto;
+    animation: style-layer-left 1000ms 120ms cubic-bezier(.16, 1, .3, 1) both;
+    &--right { animation-name: style-layer-right; animation-delay: 240ms; }
+    .style-card {
+      width: 600px; height: 300px; padding: 24px; gap: 24px;
+      display: flex; flex-direction: row; align-items: center;
+      filter: drop-shadow(0 16px 24px #0007);
+    }
+    .style-card > .stamp-frame { background-image: url('/thesis/shapes/style-600.svg'); }
+    .style-card img { position: static; flex: none; width: 220px; height: 220px; max-width: none; object-fit: cover; }
+    .style-card__copy { position: static; flex: 1; width: auto; min-width: 0; gap: 20px; }
+    .style-card strong { font-size: 40px; line-height: 1.05; color: var(--coral); }
+    .style-card__copy > span { display: block; font-size: 25px; line-height: 1.2; }
+  }
+}
+@keyframes style-layer-left {
+  0% { opacity: 0; transform: perspective(1400px) translateX(-110vw) translateZ(-120px) rotateY(-24deg) rotateZ(-7deg); }
+  100% { opacity: 1; transform: perspective(1400px) translateX(0) translateZ(0) rotateY(-2deg) rotateZ(-1deg); }
+}
+@keyframes style-layer-right {
+  0% { opacity: 0; transform: perspective(1400px) translateX(110vw) translateZ(-120px) rotateY(24deg) rotateZ(7deg); }
+  100% { opacity: 1; transform: perspective(1400px) translateX(0) translateZ(0) rotateY(2deg) rotateZ(1deg); }
+}
+@media (min-aspect-ratio: 1/1) {
+  .booth--mode-lunar {
+    .style-choice-layout { width: min(80vw, 110dvh); height: min(39vw, 53.625dvh); }
+    .style-choice-deck { width: 1230px; height: 600px; margin-left: -615px; margin-top: -300px; flex-direction: row; align-items: center; transform: scale(calc(var(--style-scale, 1) * .487805)); }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .booth--mode-lunar {
+    .style-option-layer { animation: none; }
+    .camera-photo .camera, .camera-photo__object > .stamp-frame { transition: none; }
+  }
+}
+
+// Titles stay mounted while their words blur out and resolve into the next line.
+.booth--mode-lunar[data-title-phase] {
+  h1:not(.booth-title) { display: none; }
+  .booth-title { z-index: 30; pointer-events: none; }
+  .booth-title--error em { flex-basis: 100%; font-size: .7em; color: var(--coral); }
+  .camera-photo { top: 47%; }
+  .camera-photo__actions:empty { height: 0; pointer-events: none; }
+  .camera-photo__actions:has(.results-lockup--attached) { height: 288px; }
+  .camera-photo__actions:has(> .shutter-button) { animation: none; }
+  .camera-photo__actions > .shutter-button { opacity: 0; animation: capture-button-appear 420ms 240ms ease-out both; }
+  .ticket-button__label { animation: copy-resolve 170ms ease-out both; }
+}
+.booth--mode-lunar .results-lockup--attached {
+  width: 600px; height: 288px; pointer-events: auto;
+  .share-card {
+    position: relative; left: 0; top: 0; width: 600px; height: 200px; min-height: 0;
+    padding: 22px; gap: 24px; display: flex; align-items: center; margin: 0;
+  }
+  .share-card > .stamp-frame { background-image: url('/thesis/shapes/qr-600.svg'); }
+  .share-card__qr { width: 156px; height: 156px; padding: 0; flex: none; }
+  .share-card h2 { font-size: 38px; line-height: 1.05; }
+  .share-card__instruction { display: block; font-size: 21px; line-height: 1.1; margin: 8px 0 0; }
+  .share-card__connection { font-size: 16px; line-height: 1.1; margin: 2px 0 0; }
+  .results__actions { position: relative; left: 0; top: -1px; width: 600px; height: 88px; gap: 0; }
+  .results__actions > .ticket-button { width: 300px; flex: 0 0 300px; }
+  .results__reset-timer {
+    width: 300px; height: 88px; padding: 14px 22px; flex: 0 0 300px;
+    font-size: 20px; line-height: 1.15; gap: 10px;
+    background: url('/thesis/shapes/ticket-300-ink.svg') center / 100% 100% no-repeat;
+  }
+}
+@keyframes capture-button-appear { from { opacity: 0; } to { opacity: 1; } }
+@keyframes copy-resolve { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: blur(0); } }
+@keyframes polaroid-count {
+  0% { opacity: 0; transform: scale(1.12); }
+  18% { opacity: 1; }
+  100% { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .booth--mode-lunar[data-title-phase] {
+    .camera-photo__actions > .shutter-button { opacity: 1; animation: none; }
+    .ticket-button__label { animation: none; }
+  }
+}
+.booth--mode-lunar .booth-title--camera { top: calc(var(--title-top) - 12px); }
+
+.booth--mode-lunar {
+  .camera-photo__motion { position: absolute; inset: 0; width: 600px; height: 648px; transform-origin: center; }
+  .camera-photo[data-depth="closeup"] {
+    --closeup-photo-width: min(calc(100vw / .91516), calc((100dvh - 2 * (var(--title-top) + var(--title-height) + 16px)) / 1.08));
+    --photo-width: calc(var(--closeup-photo-width) * .94);
+  }
+}
+@media (min-aspect-ratio: 1/1) {
+  .booth--mode-lunar .camera-photo[data-depth="closeup"] { --photo-width: calc(min(48vw, 70dvh) * .94); }
+}
+
+.booth--mode-lunar .style-option-layer--right .style-card strong { color: #7654a4; }
+
+.booth--mode-lunar .results-lockup--attached .results__reset-timer.ticket-button {
+  --ticket-art: url('/thesis/shapes/ticket-300-ink.svg');
+  font-family: var(--sans); text-align: left;
+  .ticket-button__label { display: flex; flex-direction: column; justify-content: center; gap: 10px; width: 100%; }
+  .timeout-line { width: 100%; }
+}
+
+// Deep black shade over the complete photo and paper, preserving color beneath it.
+.booth--mode-lunar {
+  .camera-photo__object::after {
+    content: ''; position: absolute; inset: 0; z-index: 6; pointer-events: none;
+    background: #000; mix-blend-mode: multiply; opacity: 0; transition: opacity 800ms ease;
+    -webkit-mask: url('/thesis/shapes/photo-600.svg') center / 100% 100% no-repeat;
+    mask: url('/thesis/shapes/photo-600.svg') center / 100% 100% no-repeat;
+  }
+  .camera-photo[data-depth="back"] {
+    .camera, .camera-photo__object > .stamp-frame { filter: none; }
+    .camera-photo__object::after { opacity: .74; }
+  }
+  .share-card[data-remote-pull] { z-index: 10; filter: drop-shadow(0 16px 18px #0005); }
+}
+.takeaway-page {
+  .takeaway-page__gallery { gap: 0; }
+  .takeaway-page__actions { width: 100%; margin-top: -1px; }
+  .takeaway-page__actions .takeaway-save-ticket {
+    --ticket-art: url('/thesis/shapes/ticket-390-cyan.svg');
+    position: relative; isolation: isolate; width: 100%; height: auto; aspect-ratio: 390 / 72;
+    min-height: 52px; border: 0; padding: 8px; margin: 0;
+    touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+    transition: none; transform-origin: top center; overflow: visible;
+    &, &:hover, &:active { background: var(--ticket-art) center / 100% 100% no-repeat transparent; color: var(--ink); transform: none; }
+    .ticket-button__label { position: relative; z-index: 1; pointer-events: none; }
+    .ticket-button__glow {
+      position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity 160ms ease;
+      background: radial-gradient(ellipse 100px 75px at var(--grab-x, 50%) var(--grab-y, 50%), #ffffffa0, #e2f9ff30 45%, transparent);
+      -webkit-mask: var(--ticket-art) center / 100% 100% no-repeat;
+      mask: var(--ticket-art) center / 100% 100% no-repeat;
+    }
+    &[data-illuminated] .ticket-button__glow { opacity: 1; }
+    &[data-pulling] { filter: drop-shadow(0 12px 12px #0005); opacity: 1; }
+    &:active:not(:disabled) { transform: none; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .booth--mode-lunar .camera-photo__object::after { transition: none; }
+}
+
+// Reset releases the attachments first, then powers the live square back on.
+.booth--mode-lunar {
+  .camera-photo { transition: top 900ms var(--photo-ease), opacity 350ms ease; }
+  &.booth--attract .camera-photo, &.booth--resetting .camera-photo, &.booth--camera-reveal .camera-photo { top: 50%; }
+  .results-lockup--attached.is-resetting {
+    pointer-events: none;
+    .share-card, .ticket-button { pointer-events: none; }
+    .share-card { animation: reset-card-drop 650ms cubic-bezier(.45,0,.85,.45) both; }
+    .results__actions > .ticket-button:first-child { animation: reset-tab-left 560ms 70ms ease-in both; }
+    .results__actions > .results__reset-timer { animation: reset-tab-right 570ms 130ms ease-in both; }
+  }
+  .camera__reveal { position: absolute; inset: 0; transform-origin: 50% 50%; }
+  .camera.camera--revealing {
+    overflow: hidden;
+    .camera__still { opacity: 0; transition: opacity 150ms ease; }
+    .camera__frame { visibility: visible; z-index: 6; overflow: hidden; background: #060708; }
+    .camera__reveal { animation: camera-power-on 820ms cubic-bezier(.16,1,.3,1) both; }
+  }
+}
+@keyframes reset-card-drop {
+  0% { opacity: 1; transform: translateY(0) rotate(0); }
+  70% { opacity: 1; transform: translateY(235px) rotate(4deg); }
+  100% { opacity: 0; transform: translateY(490px) rotate(8deg); }
+}
+@keyframes reset-tab-left {
+  0% { opacity: 1; transform: translateY(0) rotate(0); }
+  100% { opacity: 0; transform: translate(-20px, 450px) rotate(-14deg); }
+}
+@keyframes reset-tab-right {
+  0% { opacity: 1; transform: translateY(0) rotate(0); }
+  100% { opacity: 0; transform: translate(20px, 460px) rotate(12deg); }
+}
+@keyframes camera-power-on {
+  0% { opacity: 0; transform: scaleY(.015); filter: brightness(2.4) contrast(1.1); }
+  10% { opacity: 1; transform: scaleY(.025); }
+  58% { opacity: 1; transform: scaleY(1.035); filter: brightness(1.22) contrast(1.02); }
+  78% { transform: scaleY(.99); filter: brightness(1.06) contrast(1); }
+  100% { opacity: 1; transform: scaleY(1); filter: brightness(1) contrast(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .booth--mode-lunar {
+    .results-lockup--attached.is-resetting .share-card,
+    .results-lockup--attached.is-resetting .results__actions > .ticket-button { animation: none; opacity: 0; }
+    .camera.camera--revealing .camera__reveal { animation: none; }
+  }
+}
+
+// Kiosk drags belong to tickets, not Safari's page scrolling / pull to refresh.
+html:has(.booth), body:has(.booth) { overscroll-behavior: none; }
+body:has(.booth) { position: fixed; inset: 0; overflow: hidden; }
+.booth > :not(.developer-controls) { touch-action: none; }
+.developer-controls { overscroll-behavior: contain; }
+
+// The booth and takeaway use app controls rather than native text/image menus.
+*, *::before, *::after {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+html, body { overscroll-behavior-x: none; }
+img, video { -webkit-user-drag: none; }
+
+// Larger hit areas preserve the ticket artwork and its perforation proportions.
+.booth--mode-lunar .ticket-button::before, .takeaway-page .ticket-button::before {
+  content: ''; position: absolute; left: 0; right: 0;
+  top: calc(-10px / var(--photo-scale, 1));
+  bottom: calc(-14px / var(--photo-scale, 1));
+}
+.booth--mode-lunar button:not(.ticket-button):not(.style-card):not(.developer-controls button),
+.takeaway-page button:not(.ticket-button) { min-height: 56px; padding: 12px 18px; }
+.booth--mode-lunar .camera-photo__object > .progress {
+  top: calc(88.666% - 18px); margin: 0; z-index: 8; pointer-events: none;
+  .progress__track { height: 14px; border: 1px solid #ffffff66; background: #121212dc; box-shadow: 0 2px 10px #0009; }
+  .progress__track span { height: 100%; background: var(--cyan); }
+}
+.progress__track { position: relative; overflow: hidden; }
+.progress__track .progress__indeterminate {
+  position: absolute; inset: 0 auto 0 0; width: 34%;
+  background: linear-gradient(90deg, transparent, #b8a5ff 32%, #fff 50%, #91dcff 68%, transparent);
+  box-shadow: 0 0 16px rgba(164, 139, 255, .72);
+  animation: portrait-progress-sweep 1.45s cubic-bezier(.45,0,.55,1) infinite;
+}
+@keyframes portrait-progress-sweep {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(330%); }
+}
+
+.operator-panel {
+  position: fixed; inset: 0; z-index: 2147483647; display: grid; place-items: center;
+  padding: 24px; background: #000c; touch-action: none;
+  section { width: min(100%, 480px); padding: 28px; border: 1px solid #666; border-radius: 12px; background: #181a1c; color: #f7f7f2; font: 20px/1.45 Arial, sans-serif; box-shadow: 0 16px 64px #0009; }
+  h2 { font-size: 28px; margin: 0 0 12px; }
+  p { margin: 0 0 24px; }
+  button { display: block; width: 100%; min-height: 64px; padding: 14px; border: 1px solid #777; border-radius: 6px; font: 600 20px/1.2 Arial, sans-serif; color: #111; background: #9de1ec; touch-action: manipulation; cursor: pointer; }
+  button + button { margin-top: 12px; background: #292c2f; color: #fff; }
+}

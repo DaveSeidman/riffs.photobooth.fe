@@ -1,0 +1,75 @@
+#root:has(.lunar-mirror) { height: 100dvh; overflow: hidden; }
+.lunar-experience.lunar-mirror { position: fixed; inset: 0; min-height: 0; padding: 0; overflow: hidden; background: #000; color: #fff; }
+.mirror-stage { position: absolute; inset: 0; overflow: hidden; }
+.mirror-stage > video, .mirror-stage > img, .mirror-stage > .lunar-glass-preview, .mirror-stage > .lunar-portrait-reveal { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mirror-stage > img { object-fit: cover; }
+.mirror-stage .lunar-reveal-images { width: 100%; height: 100%; }
+.mirror-stage .lunar-reveal-portrait { object-fit: contain; }
+.mirror-prompt { position: absolute; z-index: 10; top: 12%; left: 8%; right: 8%; text-align: center; font-size: clamp(24px, 4.5vw, 48px); text-shadow: 0 2px 20px #000, 0 1px 4px #000; pointer-events: none; }
+.mirror-prompt button { pointer-events: auto; }
+.lunar-mirror button:not(.lunar-treatment):not(.mirror-shutter) { border: 1px solid #ffffff55; border-radius: 30px; background: #110b1bd9; color: #fff; padding: 12px 22px; font-size: 16px; }
+.lunar-mirror .mirror-shutter { position: absolute; z-index: 12; bottom: max(5%, env(safe-area-inset-bottom)); left: calc(50% - 30px); width: 60px; height: 60px; border-radius: 50%; background: #ffffffbb; border: 4px solid #fff; box-shadow: 0 0 0 4px #0004, inset 0 0 0 4px #282038; }
+.mirror-choice { position: absolute; z-index: 12; bottom: max(6%, env(safe-area-inset-bottom)); left: 6%; right: 6%; text-align: center; }
+.mirror-choice .lunar-treatment-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 0; }
+.mirror-choice .lunar-treatment { display: block; position: relative; overflow: hidden; padding: 28px 14px; min-height: 100px; border-radius: 18px; }
+.mirror-choice .lunar-treatment strong { font-size: clamp(32px, 6vw, 64px); }
+.mirror-choice p { font-size: 16px; text-shadow: 0 1px 8px #000, 0 1px 3px #000; background: #0c0815b3; border-radius: 22px; padding: 10px 16px; width: fit-content; margin: 16px auto; }
+.mirror-hold { position: absolute; bottom: 0; left: 0; height: 6px; width: 100%; transform-origin: left; transform: scaleX(var(--hold-progress,0)); background: currentColor; transition: transform 130ms linear; }
+.mirror-choice .is-tracking { outline: 3px solid #fff; outline-offset: 4px; }
+.mirror-processing { top: 40%; }
+.mirror-processing .lunar-spinner { display: inline-block; }
+.mirror-result-actions { position: absolute; bottom: 4%; left: 0; right: 0; z-index: 12; display: flex; justify-content: center; gap: 16px; }
+.mirror-error { position: absolute; z-index: 20; top: 3%; left: 5%; right: 5%; padding: 16px; border-radius: 12px; color: #fff; background: #681f3ce8; text-align: center; font-size: 16px; }
+.mirror-dev-tools { position: absolute; z-index: 30; bottom: 10px; left: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; max-width: 90%; padding: 12px; background: #090612ee; font-size: 14px; }
+@media (prefers-reduced-motion: reduce) { .mirror-hold { transition: none; } }
+.mirror-choice-title { font: 400 clamp(26px, 4vw, 42px)/1.15 Georgia, serif; color: #fff; text-align: center; margin: 0 0 22px; text-shadow: 0 2px 8px #080b26, 0 0 24px #ff19bd99; }
+.mirror-choice { padding: 28px 20px 20px; border-radius: 28px; background: linear-gradient(#090d2900,#090d29c9 30%,#090d29ed); }
+.mirror-choice .is-tracking { outline-color: #ff42cc; box-shadow: 0 0 14px #ff19bd99, 0 0 34px #ff19bd44; }
+.mirror-hold { height: 8px; background: #ff19bd; box-shadow: 0 0 14px #ff19bd; }
+/* Real product models sit above the circular targets, extending past their rims. */
+.mirror-choice:has(.fragrance-button) { padding: 22px 12px 14px; }
+.mirror-choice:has(.fragrance-button) .mirror-choice-title { margin-bottom: clamp(36px, 6vh, 72px); }
+.mirror-choice .lunar-treatment-choices:has(.fragrance-button) { gap: clamp(20px, 5vw, 64px); max-width: 720px; margin: 0 auto; }
+.lunar-experience .mirror-choice button.fragrance-button {
+  --fragrance-accent: #afa1ff;
+  display: flex; flex-direction: column; align-items: center; position: relative;
+  width: 100%; min-width: 0; min-height: 0; padding: 0 0 10px; overflow: visible;
+  border: 0; border-radius: 50% 50% 16px 16px; background: transparent; color: #fff;
+  box-shadow: none; transform: none; isolation: isolate;
+}
+.lunar-experience .mirror-choice button.fragrance-button.lunar-treatment--blush { --fragrance-accent: #ff91d4; }
+.fragrance-frame { display: block; width: 100%; aspect-ratio: 1; border: 2px solid var(--fragrance-accent); border-radius: 50%; background: radial-gradient(circle at 50% 40%,#5e499bba,#131131ef 72%); box-shadow: inset 0 0 24px #ae7eff33,0 0 18px #9a76ff33; transition: box-shadow 220ms, background 220ms; }
+.lunar-treatment--blush .fragrance-frame { background: radial-gradient(circle at 50% 38%,#fff1fa,#eab8d6 72%); box-shadow: inset 0 0 25px #fff8,0 0 20px #ff19bd33; }
+.fragrance-bottle { position: absolute; z-index: 2; top: -18%; left: -15%; width: 130%; height: 110%; pointer-events: none; }
+.fragrance-bottle canvas { pointer-events: none; }
+.mirror-choice .fragrance-button strong { position: relative; z-index: 3; margin-top: 20px; font-size: clamp(28px, 5vw, 48px); line-height: 1.05; text-shadow: 0 2px 10px #080b26; }
+.fragrance-select { font-size: 14px; letter-spacing: .12em; text-transform: uppercase; color: var(--fragrance-accent); margin-top: 9px; }
+.fragrance-progress { width: 100%; height: 100%; overflow: visible; transform: rotate(-90deg); }
+.fragrance-progress circle { fill: none; stroke: #fff; stroke-width: 2; stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--hold-progress,0)); filter: drop-shadow(0 0 3px #ff19bd); transition: stroke-dashoffset 130ms linear; }
+.mirror-choice .fragrance-button:hover .fragrance-frame, .mirror-choice .fragrance-button:focus-visible .fragrance-frame, .mirror-choice .fragrance-button.is-tracking .fragrance-frame { box-shadow: 0 0 0 4px #fff7,0 0 32px var(--fragrance-accent),inset 0 0 24px #ffffff33; }
+.mirror-choice .fragrance-button.is-tracking { outline: none; }
+@media (max-height: 650px) and (orientation: landscape) {
+  .mirror-choice .lunar-treatment-choices:has(.fragrance-button) { max-width: 370px; }
+  .mirror-choice:has(.fragrance-button) .mirror-choice-title { margin-bottom: 32px; }
+  .mirror-choice:has(.fragrance-button) { bottom: 2%; }
+}
+@media (prefers-reduced-motion: reduce) { .fragrance-progress circle, .fragrance-frame { transition: none; } }
+/* Give the postcard and QR footer their own space; never cover printed captions. */
+.lunar-mirror.phase-result { display: grid; grid-template-rows: minmax(0, 1fr) auto; }
+.phase-result .mirror-stage { position: relative; inset: auto; width: 100%; height: 100%; min-height: 0; }
+.phase-result .mirror-result-actions {
+  --qr-paper: #f4f2ff; --qr-ink: #29205e; --qr-border: #a795e8; --qr-glow: #9a76ff33;
+  position: relative; inset: auto; z-index: 12; align-items: center; flex-direction: column;
+  gap: 14px; padding: 16px 24px max(24px, env(safe-area-inset-bottom)); background: #090d29;
+}
+.phase-result .mirror-result-actions--blush { --qr-paper: #fff5fb; --qr-ink: #70244e; --qr-border: #efa6cf; --qr-glow: #ff63bc33; }
+.mirror-photo-qr { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 12px 12px 16px; border: 1px solid var(--qr-border); border-radius: 18px; background: var(--qr-paper); color: var(--qr-ink); box-shadow: 0 0 24px var(--qr-glow); font-size: 16px; }
+.mirror-photo-qr svg { display: block; flex: none; position: static; border-radius: 8px; width: clamp(150px, 22vw, 200px); height: clamp(150px, 22vw, 200px); }
+.mirror-photo-qr > span { display: block; position: static; line-height: 1.4; }
+@media (max-height: 650px) {
+  .phase-result .mirror-result-actions { flex-direction: row; padding: 12px; }
+  .mirror-photo-qr { flex-direction: row; padding: 8px 16px 8px 8px; }
+  .mirror-photo-qr svg { width: 120px; height: 120px; }
+}
+.fragrance-bottle canvas { filter: drop-shadow(0 0 5px #a28bff55) drop-shadow(0 0 12px #8269ff22); }
+.lunar-treatment--blush .fragrance-bottle canvas { filter: drop-shadow(0 0 5px #ff83cc55) drop-shadow(0 0 12px #ff43b322); }

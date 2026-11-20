@@ -1,0 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;450;500;550;600&display=swap');
+:root { color-scheme:dark; font-family:'DM Sans',Arial,sans-serif; color:#eee7f5; background:#000; }
+* { box-sizing:border-box; }
+body { margin:0; background:#000; }
