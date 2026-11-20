@@ -8,6 +8,14 @@ Use Node 22. Run `npm ci`, copy `.env.example` to `.env`, then `npm run dev` (po
 
 Camera access requires localhost or HTTPS. The development test photos are intentionally excluded from Git; the live experience uses the camera. F1 opens the operator controls.
 
+## GitHub Pages deployment
+
+`.github/workflows/deploy-pages.yml` tests, builds, and deploys every push to `main`; it can also be run manually from Actions. Pages uses GitHub Actions as its publishing source. The workflow derives the asset base path and public URL from Pages configuration, including a future custom domain.
+
+Set the repository **Actions variable** `VITE_API_URL` to the deployed backend HTTPS origin (without a trailing slash), then rerun the workflow. Without this variable, the site is a camera/visual preview and generation requests use an intentionally unavailable placeholder. Never store `FAL_KEY` in frontend variables.
+
+Set backend `ALLOWED_ORIGINS` to the Pages site's origin (initially `https://daveseidman.github.io`). If a custom domain is added later, update CORS and rerun deployment.
+
 ## Render deployment
 
 Create a **Static Site** from this repository, branch `main`, with no root directory override:
