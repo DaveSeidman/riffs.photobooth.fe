@@ -1,14 +1,13 @@
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import {
-  Environment,
-  Lightformer,
   MeshTransmissionMaterial,
   OrbitControls,
 } from "@react-three/drei";
 import { Quaternion, Vector3 } from "three";
 import { followTarget } from "./followTarget.js";
 import { advanceFragranceCycle, createFragranceCycle, fragranceMix, swapPose } from "./fragranceCycle.js";
+import CameraEnvironment from "./CameraEnvironment.jsx";
 import BottleAsset from "./BottleAsset.jsx";
 import SwirlSparkles from "./SwirlSparkles.jsx";
 import { easeInOutQuad } from "./settings.js";
@@ -109,6 +108,7 @@ function TransmissionGlass({ settings }) {
       clearcoat={settings.clearcoat ?? 1}
       clearcoatRoughness={settings.clearcoatRoughness ?? 0.035}
       envMapIntensity={settings.highlights}
+      backsideEnvMapIntensity={settings.highlights}
     />
   );
 }
@@ -311,40 +311,7 @@ export default function GlassScene({
       {(settings.sparkles ?? true) && settings.visible && (
         <SwirlSparkles pose={pose} settings={settings} />
       )}
-      <Environment resolution={256} frames={1}>
-        <Lightformer
-          form="rect"
-          intensity={8}
-          color="white"
-          scale={[0.65, 7, 1]}
-          position={[-3, 1, 3]}
-          rotation={[0, 0.5, 0]}
-        />
-        <Lightformer
-          form="rect"
-          intensity={5}
-          color="#eceaff"
-          scale={[1, 6, 1]}
-          position={[3, 0, 2]}
-          rotation={[0, -0.6, 0]}
-        />
-        <Lightformer
-          form="rect"
-          intensity={5}
-          color="white"
-          scale={[6, 0.6, 1]}
-          position={[0, 4, 1]}
-          rotation={[Math.PI / 2, 0, 0]}
-        />
-        <Lightformer
-          form="ring"
-          intensity={3}
-          color="#ffd6e6"
-          scale={3}
-          position={[0, 1, -4]}
-          rotation={[0, Math.PI, 0]}
-        />
-      </Environment>
+      <CameraEnvironment source={source} settings={settings} />
     </>
   );
 }

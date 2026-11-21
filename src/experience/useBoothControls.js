@@ -146,6 +146,8 @@ export function useBoothControls() {
       tint: { value: glassDefaults.tint, label: "Glass tint" },
     }),
     Light: folder({
+      cameraEnvironment: { value: true, label: "Camera reflections" },
+      cameraEnvironmentStrength: { value: .8, min: 0, max: 2, step: .05, label: "Camera light" },
       highlights: {
         value: glassDefaults.highlights,
         min: 0,

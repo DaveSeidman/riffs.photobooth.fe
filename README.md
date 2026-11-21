@@ -43,3 +43,7 @@ Face tracking runs in a dedicated worker; the relighting interpolates head shape
 ## Pulse starfield
 
 Pulse reuses the seeded particle layout, star shaders, eclipse palette, nebula shader, and rigid sky rotation from lunar-tracking's Starfield.jsx. The booth renders 45,000 fixed particles into a viewport-sized texture (longest side capped at 2048), then composites it through the existing silhouette window. Brightness does not pulse, and stars have no independent drift. Skeleton attraction, celestial props, and the tracking installation's postprocessing are omitted from this background-only pass. The field pauses while Blush is fully visible.
+
+## Camera-lit orbit bottles
+
+The orbit bottles use MeshTransmissionMaterial with a live 64-pixel-per-face cube environment. A separate environment scene wraps the camera texture around the glass and lifts bright pixels to simulate HDR lighting, alongside restrained studio strips. It is a lighting approximation from an LDR camera, not measured HDR capture. F1 → Light → Camera reflections toggles the experiment; Camera light adjusts the feed contribution. The static studio environment remains available when disabled.
