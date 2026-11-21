@@ -39,3 +39,7 @@ The existing Every frontend uses GitHub Pages at `photobooth.lightboxlive.io/eve
 Blush reuses the GPU velocity/pressure solver, dye advection, pink palette, and fluid-driven dust from the adjacent lunar-tracking project. Its source and license notice are included here, so deployment does not depend on that folder. The booth supplies tracked face motion in place of the tracking installation's skeleton joints. Simulation targets run below display resolution and pause while Pulse is fully visible. Floating-point WebGL2 render targets are required for the fluid effect.
 
 Face tracking runs in a dedicated worker; the relighting interpolates head shapes and light position at rendering frequency.
+
+## Pulse starfield
+
+Pulse reuses the seeded particle layout, star shaders, eclipse palette, nebula shader, and rigid sky rotation from lunar-tracking's Starfield.jsx. The booth renders 45,000 fixed particles into a viewport-sized texture (longest side capped at 2048), then composites it through the existing silhouette window. Brightness does not pulse, and stars have no independent drift. Skeleton attraction, celestial props, and the tracking installation's postprocessing are omitted from this background-only pass. The field pauses while Blush is fully visible.

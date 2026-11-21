@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Color, Vector3, Vector4 } from "three";
+import { TrackingStarfield } from "./stars/TrackingStarfield.js";
 import { FluidField, BLUSH_DEFAULTS } from "./fluid/FluidField.js";
 import { followTarget } from "./followTarget.js";
 import { maskContourGLSL } from "./maskContour.js";
@@ -101,6 +102,11 @@ export default function PortraitRelighting({ source, settings, vision, facesRef,
   const group = useRef(), image = useRef(), background = useRef();
   const { gl, camera, viewport, controls, size } = useThree();
   const fluid = useRef(null);
+  const starfield = useRef(null);
+  useEffect(()=>{
+    const field=new TrackingStarfield(gl);starfield.current=field;
+    return ()=>{starfield.current=null;field.dispose();};
+  },[gl]);
   const lightInitialized = useRef(false);
   const headSeen = useRef(0);
   const headTarget = useMemo(()=>new Vector4(),[]);
@@ -127,7 +133,7 @@ export default function PortraitRelighting({ source, settings, vision, facesRef,
     heads:{value:Array.from({length:4},()=>new Vector4())},
   }), [source]);
   const backgroundUniforms = useMemo(() => ({
-    blushFluid:{value:null}, fluidReady:{value:0}, video:{value:source.texture}, mask:{value:null}, maskReady:{value:1}, time:{value:0}, pulseMix:{value:0},
+    pulseSky:{value:null}, skyReady:{value:0}, skyUvScale:{value:[1,1]}, blushFluid:{value:null}, fluidReady:{value:0}, video:{value:source.texture}, mask:{value:null}, maskReady:{value:1}, time:{value:0}, pulseMix:{value:0},
     threshold:{value:.5}, softness:{value:.24}, outlineExtent:{value:2.4}, outlineOffset:{value:10}, clearGap:{value:24}, backgroundOpacity:{value:.75},
     maskTexel:{value:[1/384,1/288]}, screenTexel:{value:[1/720,1/1280]}, imageAspect:{value:source.width/source.height},
   }), [source]);
@@ -191,6 +197,11 @@ export default function PortraitRelighting({ source, settings, vision, facesRef,
     bg.pulseMix.value += (targetMix-bg.pulseMix.value)*(1-Math.exp(-delta*10));
     pulseColour.set(settings.pulseOutlineColor ?? "#00cfff");
     u.outlineColor.value.lerp(pulseColour,bg.pulseMix.value);
+    if (starfield.current && settings.fragranceBackground !== false && (bg.pulseMix.value > .001 || targetMix > 0)) {
+      starfield.current.tick(document.hidden || reducedMotion.matches ? 0 : delta*(settings.backgroundSpeed ?? 1),size.width,size.height);
+      bg.pulseSky.value=starfield.current.output.texture;bg.skyReady.value=1;
+      bg.skyUvScale.value=[width/view.width,(width*source.height/source.width)/view.height];
+    }
     const faces = facesRef?.current ?? [];
     if (fluid.current && settings.fragranceBackground !== false && (bg.pulseMix.value < .999 || targetMix < 1)) {
       fluid.current.tick(Math.min(delta,.033)*(settings.backgroundSpeed ?? 1), {
