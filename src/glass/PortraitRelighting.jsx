@@ -53,6 +53,7 @@ const fragmentShader = `
     float neonAlpha = clamp((tube+glow)*outlineStrength,0.,.98);
     float compositeAlpha = alpha + neonAlpha*(1.-alpha);
     if (compositeAlpha < .005) discard;
+    if (objectMaskPass > .5) { gl_FragColor=vec4(0.,0.,0.,compositeAlpha); return; }
     vec3 base = sRGBTransferEOTF(texture2D(video, vUv)).rgb;
     // A soft convex face estimate supplies a moving key and rim. The mask
     // separates people; this is an artistic light model, not recovered 3D normals.
@@ -87,7 +88,7 @@ const fragmentShader = `
     if (showMask > .5) colour = vec3(confidence);
     // White-pink core and broad hot-pink falloff, both driven by the same
     // spatially blurred, temporally interpolated mask as the person layer.
-    vec3 neon = mix(outlineColor, vec3(1.,.7,.94), clamp(tube*1.3,0.,.65));
+    vec3 neon = mix(outlineColor, mix(outlineColor, vec3(1.), .7), clamp(tube*1.3,0.,.65));
     vec3 composite = (colour*alpha + neon*neonAlpha*(1.-alpha)) / max(compositeAlpha,.001);
     gl_FragColor = showMask > .5 ? vec4(vec3(confidence),max(alpha,neonAlpha)) : vec4(composite, compositeAlpha);
     if (objectMaskPass > .5) gl_FragColor.rgb = vec3(0.0);
@@ -100,6 +101,7 @@ export default function PortraitRelighting({ source, settings, vision, facesRef,
   const direction = useMemo(() => new Vector3(), []);
   const origin = useMemo(() => new Vector3(), []);
   const backColour = useMemo(() => new Color(), []);
+  const pulseColour = useMemo(() => new Color(), []);
   const uniforms = useMemo(() => ({
     video: {value:source.texture}, mask:{value:null}, lightPosition:{value:new Vector3()},
     lightColor:{value:new Color()}, strength:{value:1}, ambient:{value:1}, reach:{value:4},
@@ -168,6 +170,8 @@ export default function PortraitRelighting({ source, settings, vision, facesRef,
     const targetMix = settings.autoFragranceCycle !== false && Number.isFinite(pose.current.fragranceMix)
       ? pose.current.fragranceMix : pulse ? 1 : 0;
     bg.pulseMix.value += (targetMix-bg.pulseMix.value)*(1-Math.exp(-delta*10));
+    pulseColour.set(settings.pulseOutlineColor ?? "#00cfff");
+    u.outlineColor.value.lerp(pulseColour,bg.pulseMix.value);
     const faces = facesRef?.current ?? [];
     u.headCount.value = Math.min(4,faces.length);
     faces.slice(0,4).forEach((f,i)=>u.heads.value[i].set(f.x+f.width/2,1-f.y-f.height/2,f.width*.6,f.height*.7));

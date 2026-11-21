@@ -217,6 +217,9 @@ export default function LunarExperience() {
     const keydown = event => {
       if (event.repeat || controls.visible || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
       if (event.code === "Escape") { event.preventDefault(); actions.current.reset(); }
+      else if (!camera.photo && ["KeyB", "KeyP", "KeyA"].includes(event.code)) {
+        event.preventDefault(); controls.setPreviewMode({KeyB:"blush",KeyP:"pulse",KeyA:"auto"}[event.code]);
+      }
       else if (!camera.photo && event.code === "Space") { event.preventDefault(); actions.current.capture(); }
       else if (camera.photo && phase === "capture" && ["KeyB","KeyP"].includes(event.code)) {
         event.preventDefault(); actions.current.generate({selectedTreatment:event.code === "KeyB" ? "blush" : "pulse"});
@@ -233,6 +236,11 @@ export default function LunarExperience() {
   return (
     <main className={`lunar-experience lunar-mirror phase-${phase}`}>
       <Leva hidden={!controls.visible} collapsed={false} titleBar={{title:"Lunar / Booth controls"}} />
+      {!camera.photo && countdown === null && <nav className="mirror-mode-switch" aria-label="Preview fragrance">
+        {["blush", "pulse", "auto"].map(mode => <button key={mode} type="button"
+          aria-pressed={controls.previewMode === mode} onClick={() => controls.setPreviewMode(mode)}
+          title={`${mode === "auto" ? "A" : mode === "blush" ? "B" : "P"} — ${mode} preview`}>{mode}</button>)}
+      </nav>}
       <div className="mirror-stage">
         <video ref={camera.videoRef} autoPlay playsInline muted className="lunar-camera"
           style={{opacity:camera.photo || phase === "result" ? 0 : 1}} />

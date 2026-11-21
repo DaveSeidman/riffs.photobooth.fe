@@ -23,8 +23,8 @@ function isDofObject(object) {
 // video background and relit person layer come from an unblurred scene frame.
 export default function ObjectDepthOfField() {
   const { gl, scene, camera } = useThree();
-  const sharp = useFBO({samples:2});
-  const mask = useFBO({samples:2, type:UnsignedByteType});
+  const sharp = useFBO({samples:0});
+  const mask = useFBO({samples:0, type:UnsignedByteType});
   const resources = useMemo(() => ({
     black:new MeshBasicMaterial({color:0x000000,toneMapped:false}),
     blackNoDepth:new MeshBasicMaterial({color:0x000000,toneMapped:false,depthWrite:false}),

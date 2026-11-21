@@ -44,9 +44,9 @@ export default function PortraitGlass({
       <GlassBoundary>
         <Canvas
           camera={{ position: [0, 0, 8], fov: 38 }}
-          dpr={[1, 1.5]}
+          dpr={1}
           gl={{
-            antialias: true,
+            antialias: false,
             preserveDrawingBuffer: true,
             powerPreference: "high-performance",
           }}

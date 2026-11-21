@@ -32,8 +32,10 @@ export function useSelfieVision(videoRef, enabled, settings = {}) {
       last = time;
       busy = true;
       try {
-        canvas.width = 384;
-        canvas.height = Math.round(384 * video.videoHeight / video.videoWidth);
+        const frameHeight = Math.round(384 * video.videoHeight / video.videoWidth);
+        if (canvas.width !== 384 || canvas.height !== frameHeight) {
+          canvas.width = 384; canvas.height = frameHeight;
+        }
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         const bitmap = await createImageBitmap(canvas);
         if (cancelled) { bitmap.close(); return; }

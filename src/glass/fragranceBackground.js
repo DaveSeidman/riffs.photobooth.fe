@@ -89,7 +89,12 @@ export const fragranceBackgroundFragment = `
       vec2 radius=maskTexel*outlineExtent+screenTexel*(outlineOffset+clearGap);
       float windowMask=smoothstep(threshold-softness,threshold+softness,expandMask(uv,radius));
       vec2 p=(vUv-.5)*vec2(imageAspect,1.)*2.;
-      vec3 artwork=mix(blush(p),pulse(p),pulseMix);
+      // Evaluate both worlds only during the transition.
+      vec3 artwork;
+      if (windowMask > .999) artwork=cameraColor;
+      else if (pulseMix < .001) artwork=blush(p);
+      else if (pulseMix > .999) artwork=pulse(p);
+      else artwork=mix(blush(p),pulse(p),pulseMix);
       float artworkAlpha=(1.-windowMask)*clamp(backgroundOpacity,0.,1.);
       gl_FragColor=vec4(mix(cameraColor,artwork,artworkAlpha),1.);
     }

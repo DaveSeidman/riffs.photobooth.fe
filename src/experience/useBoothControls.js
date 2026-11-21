@@ -5,6 +5,7 @@ import { glassDefaults } from "../glass/settings.js";
 
 export function useBoothControls() {
   const [visible, setVisible] = useState(false);
+  const [previewMode, setPreviewMode] = useState("auto");
   const [cameraReset, setCameraReset] = useState(0);
   useEffect(() => {
     const toggle = (event) => {
@@ -36,7 +37,8 @@ export function useBoothControls() {
     "Heads & light": folder({
       segmentation: { value: true, label: "Person mask" },
       neonOutline: { value: true, label: "Neon silhouette" },
-      outlineColor: { value: "#ff19bd", label: "Neon pink" },
+      outlineColor: { value: "#ff19bd", label: "Blush neon" },
+      pulseOutlineColor: { value: "#00cfff", label: "Pulse neon" },
       outlineStrength: { value: 1.8, min: 0, max: 3, step: .1, label: "Neon glow" },
       outlineOffset: { value: 10, min: 0, max: 40, step: 1, label: "Outline offset (px)" },
       outlineWidth: { value: 1.5, min: .5, max: 8, step: .25, label: "Outline width" },
@@ -206,7 +208,11 @@ export function useBoothControls() {
   });
   return {
     visible,
+    previewMode,
+    setPreviewMode,
     toggle: () => setVisible((value) => !value),
-    settings: { ...values, model: values.model?.replace(" / clear", ""), cameraReset },
+    settings: { ...values, model: values.model?.replace(" / clear", ""), cameraReset,
+      ...(previewMode === "auto" ? {} : {model:previewMode === "pulse" ? "Lunar Pulse" : "Lunar Blush", backgroundStyle:previewMode, autoFragranceCycle:false}),
+    },
   };
 }

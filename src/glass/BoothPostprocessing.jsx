@@ -17,7 +17,7 @@ function OrbitDepthOfField({settings,motionInfo}) {
 export default function BoothPostprocessing({ settings, motionInfo }) {
   if (!settings.postprocessing) return null;
   return (
-    <EffectComposer key={settings.dof ? "object-dof" : "sharp"} multisampling={2} enableNormalPass={false} mergeMode={settings.dof ? "none" : "auto"}>
+    <EffectComposer key={settings.dof ? "object-dof" : "sharp"} multisampling={0} enableNormalPass={false} mergeMode={settings.dof ? "none" : "auto"}>
       {settings.dof && <OrbitDepthOfField settings={settings} motionInfo={motionInfo}/>}
       {settings.dof && <ObjectDepthOfField />}
       {settings.bloom && (

@@ -90,8 +90,8 @@ function TransmissionGlass({ settings }) {
     <MeshTransmissionMaterial
       backside={settings.backside ?? true}
       samples={6}
-      resolution={768}
-      backsideResolution={512}
+      resolution={512}
+      backsideResolution={256}
       transmission={settings.transmission ?? 1}
       thickness={settings.thickness}
       backsideThickness={

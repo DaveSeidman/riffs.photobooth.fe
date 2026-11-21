@@ -6,7 +6,7 @@ Portrait camera booth with smile-triggered capture, Lunar Blush/Pulse treatments
 
 Use Node 22. Run `npm ci`, copy `.env.example` to `.env`, then `npm run dev` (port 8080). Start the [backend](https://github.com/DaveSeidman/riffs.photobooth.be) separately on port 8000. Run `npm test` and `npm run build` to check changes.
 
-Camera access requires localhost or HTTPS. The development test photos are intentionally excluded from Git; the live experience uses the camera. F1 opens the operator controls.
+Camera access requires localhost or HTTPS. The development test photos are intentionally excluded from Git; the live experience uses the camera. F1 opens the operator controls. In the live preview, use the compact Blush / Pulse / Auto buttons or B / P / A keys to switch worlds. Manual selection pauses automatic cycling; Auto resumes it. After capture, B / P still select the generated treatment. Pulse uses a cyan neon outline; Blush uses pink.
 
 ## GitHub Pages deployment
 
