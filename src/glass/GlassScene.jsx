@@ -141,6 +141,7 @@ function Glass({ settings, recede = false, progress, pose, source, facesRef, mot
   );
   useEffect(() => () => geometry.dispose(), [geometry]);
   useFrame(({ clock }, delta) => {
+    const rotationDelta = settings.spinning ? Math.min(delta, .05) : 0;
     const m = motion.current;
     if (m.started === null) m.started = clock.elapsedTime;
     const t = easeInOutQuad(
@@ -178,7 +179,7 @@ function Glass({ settings, recede = false, progress, pose, source, facesRef, mot
       }
       if (!a.initialized) { a.anchor.copy(a.center); a.initialized = true; }
       a.anchor.lerp(a.center,1-Math.exp(-2.8*Math.min(delta,.1)));
-      if (settings.headOrbitMoving ?? true) headAngle.current += Math.min(delta,.05)*(settings.headOrbitSpeed ?? .4);
+      if (settings.headOrbitMoving ?? true) headAngle.current += rotationDelta*(settings.headOrbitSpeed ?? .4);
       const theta = headAngle.current + (settings.headOrbitPhase ?? 0)*Math.PI/180;
       const targetRadius = Math.min(Math.max(settings.headOrbitRadius ?? 1.6,headWidth/2+.55),view.width*.43);
       if (!a.radius) a.radius=targetRadius;
@@ -206,8 +207,7 @@ function Glass({ settings, recede = false, progress, pose, source, facesRef, mot
     followTarget(mesh.current.position, tracking.targetPosition, delta, recede ? 9 : settings.positionFollow ?? 4);
     const scale = baseScale*(hoveringScale*(1-m.progress)+captureBottle.scale*m.progress);
     mesh.current.scale.setScalar(scale);
-    if (settings.spinning)
-      angle.current += Math.min(delta, 0.05) * settings.speed;
+    angle.current += rotationDelta * settings.speed;
     pose.current.angle = angle.current + (settings.rotation * Math.PI) / 180;
     pose.current.position.copy(mesh.current.position);
     pose.current.scale = scale;
@@ -219,7 +219,7 @@ function Glass({ settings, recede = false, progress, pose, source, facesRef, mot
         : Math.PI / 2 - 0.06,
     );
     pose.current.quaternion.copy(mesh.current.quaternion);
-    const state=advanceFragranceCycle(cycle.current,Math.min(delta,.1),{
+    const state=advanceFragranceCycle(cycle.current,settings.spinning ? Math.min(delta,.1) : 0,{
       rear:settings.headOrbit?tracking.rear:1, paused:recede || document.hidden,
       enabled:settings.autoFragranceCycle !== false && settings.model !== "Octagon",
       interval:settings.fragranceCycleSeconds ?? 30,
