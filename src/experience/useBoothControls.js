@@ -93,7 +93,7 @@ export function useBoothControls() {
       transmission: { value: 1, min: 0, max: 1, step: 0.01 },
       backside: { value: true, label: "Render back face" },
       backsideThickness: {
-        value: 0.098,
+        value: glassDefaults.backsideThickness,
         min: 0,
         max: 3,
         step: 0.01,

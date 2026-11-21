@@ -1,7 +1,8 @@
 export const glassDefaults = {
   model: "Lunar Blush",
-  thickness: 0.28,
-  ior: 1.4,
+  thickness: 0.9,
+  backsideThickness: 0.32,
+  ior: 1.52,
   roughness: 0.035,
   convexity: 0.12,
   bevel: 0.1,
