@@ -37,10 +37,19 @@ export const fragranceBackgroundFragment = `
     vec2 flow=vec2(clouds(p*1.5+vec2(t,0.)),clouds(p*1.5+vec2(4.2,-t*.7)));
     vec2 q=p*2.5+flow*2.;
     float curl=clouds(q+vec2(sin(p.y*2.+t),cos(p.x*2.-t))*.6);
+    // Fine, advected mottling breaks the broad swirls into cloudy rose marble.
+    // Fixed spatial noise moves with the flow instead of flickering each frame.
+    vec2 detailUv=p+flow*.22+vec2(t*.08,-t*.04);
+    float medium=noise(detailUv*19.+curl*2.);
+    float fine=noise(detailUv*53.+medium*.7);
+    float grain=noise(detailUv*127.);
     float folds=.5+.5*sin(q.x*3.+q.y*2.+curl*9.-t);
-    float silk=smoothstep(.25,.9,folds)*.45+curl*.55;
-    vec3 color=mix(vec3(.32,.008,.115),vec3(.92,.08,.38),silk);
-    color=mix(color,vec3(1.,.64,.80),pow(silk,3.)*.8);
+    float marble=smoothstep(.22,.79,curl*.48+medium*.30+fine*.15+folds*.07);
+    vec3 color=mix(vec3(.38,.008,.095),vec3(.92,.075,.34),marble);
+    float wisps=smoothstep(.48,.82,medium*.55+fine*.25+curl*.20);
+    color=mix(color,vec3(1.,.57,.69),wisps*.62);
+    color+=vec3(.07,.035,.04)*(grain-.5);
+    color*=.88+.24*fine;
     // Two slow, curved streams of pearl-pink dust ride the swirling field.
     float angle=time*.045+length(p)*.5;
     mat2 orbit=mat2(cos(angle),-sin(angle),sin(angle),cos(angle));
@@ -72,11 +81,20 @@ export const fragranceBackgroundFragment = `
     vec2 drift=vec2(time*.003,-time*.002);
     float gas=clouds(p*2.2+drift);
     float band=exp(-pow((p.x*.65+p.y*.5+sin(p.y*2.)*.18),2.)*6.);
-    vec3 color=vec3(.006,.008,.042)+vec3(.025,.018,.12)*gas;
-    color+=vec3(.16,.018,.25)*pow(gas,2.)*band;
-    color+=vec3(.025,.055,.13)*clouds(p*3.+4.-drift);
+    // Plum nebula above, dusty cobalt below, with fine interstellar structure.
+    float blueCloud=clouds(p*3.+4.-drift);
+    vec2 detailUv=p+vec2(gas,blueCloud)*.15+drift;
+    float filaments=noise(detailUv*23.);
+    float dust=noise(detailUv*67.);
+    float lower=1.-smoothstep(-.65,.65,p.y);
+    vec3 color=mix(vec3(.075,.003,.085),vec3(.009,.024,.075),lower);
+    float nebula=smoothstep(.22,.76,gas*.65+filaments*.25+dust*.10);
+    color+=mix(vec3(.24,.008,.19),vec3(.025,.095,.19),lower)*nebula*(.4+.6*band);
+    color+=vec3(.04,.055,.105)*blueCloud*(.5+filaments);
+    color*=.78+.35*filaments+.12*dust;
     float sparkle=stars(p+drift,20.,1.)+stars(p-drift*.5,37.,8.)*.55;
-    return color+vec3(.66,.54,1.)*sparkle;
+    float distant=pow(dust,12.)*.18;
+    return color+vec3(.78,.70,1.)*(sparkle+distant);
   }
   ${maskContourGLSL}
   void main() {
