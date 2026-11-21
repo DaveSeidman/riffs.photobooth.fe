@@ -241,6 +241,16 @@ export default function LunarExperience() {
           aria-pressed={controls.previewMode === mode} onClick={() => controls.setPreviewMode(mode)}
           title={`${mode === "auto" ? "A" : mode === "blush" ? "B" : "P"} — ${mode} preview`}>{mode}</button>)}
       </nav>}
+      {!controls.visible && <div className="mirror-branding" aria-label="RiiFFS Parfums — Lunar">
+        <div className="mirror-brand-riiffs">
+          <img src={`${import.meta.env.BASE_URL}riiffs/riiffs-logo.png`} alt="RiiFFS" />
+          <span>PARFUMS</span>
+        </div>
+        <div className="mirror-brand-lunar">
+          <span className="mirror-lunar-wordmark"><i aria-hidden="true" />LUNAR</span>
+          <span className="mirror-brand-tagline">Another World. Another You.</span>
+        </div>
+      </div>}
       <div className="mirror-stage">
         <video ref={camera.videoRef} autoPlay playsInline muted className="lunar-camera"
           style={{opacity:camera.photo || phase === "result" ? 0 : 1}} />
