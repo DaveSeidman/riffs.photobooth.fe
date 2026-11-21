@@ -47,9 +47,9 @@ const fragmentShader = `
     vec2 offsetRadius=screenTexel*outlineOffset;
     float inner = smoothstep(threshold-softness, threshold+softness, expandMask(maskUv,offsetRadius));
     float outer = smoothstep(threshold-softness, threshold+softness, expandMask(maskUv,offsetRadius+maskTexel*outlineWidth));
-    float halo = smoothstep(threshold-softness*1.5, threshold+softness*1.5, expandMask(maskUv,offsetRadius+maskTexel*outlineWidth*3.5));
+    float halo = smoothstep(threshold-softness*.75, threshold+softness*.75, expandMask(maskUv,offsetRadius+maskTexel*outlineWidth*1.6));
     float tube = max(0., outer-inner);
-    float glow = max(0., halo-outer) * .35;
+    float glow = max(0., halo-outer) * .18;
     float neonAlpha = clamp((tube+glow)*outlineStrength,0.,.98);
     float compositeAlpha = alpha + neonAlpha*(1.-alpha);
     if (compositeAlpha < .005) discard;
@@ -86,7 +86,7 @@ const fragmentShader = `
     vec3 illumination = lightColor * strength * falloff * (key + rimStrength*(rim+edgeLight));
     vec3 colour = base * (ambient+illumination) + illumination*.035;
     if (showMask > .5) colour = vec3(confidence);
-    // White-pink core and broad hot-pink falloff, both driven by the same
+    // Bright core and tight coloured halo, both driven by the same
     // spatially blurred, temporally interpolated mask as the person layer.
     vec3 neon = mix(outlineColor, mix(outlineColor, vec3(1.), .7), clamp(tube*1.3,0.,.65));
     vec3 composite = (colour*alpha + neon*neonAlpha*(1.-alpha)) / max(compositeAlpha,.001);
@@ -112,7 +112,7 @@ export default function PortraitRelighting({ source, settings, vision, facesRef,
   }), [source]);
   const backgroundUniforms = useMemo(() => ({
     video:{value:source.texture}, mask:{value:null}, maskReady:{value:1}, time:{value:0}, pulseMix:{value:0},
-    threshold:{value:.5}, softness:{value:.24}, outlineExtent:{value:5.25}, outlineOffset:{value:10}, clearGap:{value:24}, backgroundOpacity:{value:.75},
+    threshold:{value:.5}, softness:{value:.24}, outlineExtent:{value:2.4}, outlineOffset:{value:10}, clearGap:{value:24}, backgroundOpacity:{value:.75},
     maskTexel:{value:[1/384,1/288]}, screenTexel:{value:[1/720,1/1280]}, imageAspect:{value:source.width/source.height},
   }), [source]);
   const reducedMotion = useMemo(()=>window.matchMedia("(prefers-reduced-motion: reduce)"),[]);
@@ -158,7 +158,7 @@ export default function PortraitRelighting({ source, settings, vision, facesRef,
     bg.maskTexel.value = u.maskTexel.value;
     bg.threshold.value = u.threshold.value;
     bg.softness.value = u.softness.value;
-    bg.outlineExtent.value = settings.neonOutline === false ? 0 : u.outlineWidth.value*3.5;
+    bg.outlineExtent.value = settings.neonOutline === false ? 0 : u.outlineWidth.value*1.6;
     bg.outlineOffset.value = settings.neonOutline === false ? 0 : u.outlineOffset.value;
     bg.clearGap.value = settings.backgroundGap ?? 24;
     bg.backgroundOpacity.value = settings.backgroundOpacity ?? .75;
