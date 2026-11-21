@@ -33,3 +33,9 @@ Add a custom domain such as `riffs.lightboxlive.io` in Render, follow its DNS in
 ## Existing Every installation
 
 The existing Every frontend uses GitHub Pages at `photobooth.lightboxlive.io/every/`; its backend is a separate Render service. A new custom domain attached to that backend serves the same application, not a separate RiiFFS deployment. Use a new static site and backend in the existing Render account to retain Every. Repurposing the Every backend requires changing its repository/environment and replaces the existing application. Local November 8 backup records show its disk was deleted, so restore persistent storage before reusing it for QR photos.
+
+## Blush fluid
+
+Blush reuses the GPU velocity/pressure solver, dye advection, pink palette, and fluid-driven dust from the adjacent lunar-tracking project. Its source and license notice are included here, so deployment does not depend on that folder. The booth supplies tracked face motion in place of the tracking installation's skeleton joints. Simulation targets run below display resolution and pause while Pulse is fully visible. Floating-point WebGL2 render targets are required for the fluid effect.
+
+Face tracking runs in a dedicated worker; the relighting interpolates head shapes and light position at rendering frequency.

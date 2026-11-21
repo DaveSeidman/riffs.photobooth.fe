@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { withDeadline } from "./withDeadline.js";
 import { countPhotoFaces } from "./countPhotoFaces.js";
-import { detectPortraitFaces } from "./detectPortraitFaces.js";
 
 export function usePortraitCamera() {
   const videoRef = useRef(null),
@@ -68,59 +67,35 @@ export function usePortraitCamera() {
   }, [start, stop]);
   useEffect(() => {
     if (status !== "Live camera" || photo) return;
-    let cancelled = false,
-      detector,
-      timer;
-    let candidate = 0,
-      repeats = 0;
-    (async () => {
+    let cancelled=false, busy=false, timer, candidate=0, repeats=0;
+    const worker=new Worker(`${import.meta.env.BASE_URL}vision/portrait-worker.js`);
+    const canvas=document.createElement("canvas"), context=canvas.getContext("2d");
+    const tick=async()=>{
+      const video=videoRef.current;
+      if(cancelled || busy || !video?.videoWidth || video.paused || document.hidden) return;
+      busy=true;
       try {
-        const { FaceDetector, FilesetResolver } =
-          await import("@mediapipe/tasks-vision");
-        const root = `${import.meta.env.BASE_URL}vision/`;
-        // The detector script loader expects a classic Emscripten bundle.
-        const files = await FilesetResolver.forVisionTasks(`${root}wasm`);
-        if (cancelled) return;
-        detector = await FaceDetector.createFromOptions(files, {
-          baseOptions: {
-            modelAssetPath: `${root}face-detector.tflite`,
-            delegate: "CPU",
-          },
-          runningMode: "VIDEO",
-          minDetectionConfidence: 0.6,
-        });
-        if (cancelled) {
-          detector.close();
-          return;
-        }
-        const scratch = document.createElement("canvas");
-        timer = setInterval(() => {
-          if (!videoRef.current?.videoWidth) return;
-          try {
-            const video = videoRef.current;
-            const detections = detectPortraitFaces(video,input=>detector.detectForVideo(input,performance.now()),scratch);
-            facesRef.current = detections;
-            const n = detections.length;
-            if (candidate === n) repeats++;
-            else {
-              candidate = n;
-              repeats = 1;
-            }
-            if (repeats >= 3) setDetected(n);
-          } catch {
-            /* Manual group-size controls remain available. */
-          }
-        }, 500);
-      } catch {
-        /* Face detection is optional and never blocks capture. */
-      }
-    })();
-    return () => {
-      cancelled = true;
-      clearInterval(timer);
-      facesRef.current = [];
-      detector?.close();
+        const width=Math.min(640,video.videoWidth), height=Math.round(width*video.videoHeight/video.videoWidth);
+        if(canvas.width!==width || canvas.height!==height) {canvas.width=width;canvas.height=height;}
+        context.drawImage(video,0,0,width,height);
+        const bitmap=await createImageBitmap(canvas);
+        if(cancelled) {bitmap.close();return;}
+        worker.postMessage({type:"frame",bitmap,timestamp:performance.now()},[bitmap]);
+      } catch {busy=false;}
     };
+    worker.onmessage=({data})=>{
+      if(cancelled) return;
+      if(data.type==="ready") {timer=setInterval(tick,125);void tick();}
+      else if(data.type==="faces") {
+        busy=false;facesRef.current=data.faces;
+        const n=data.faces.length;
+        if(candidate===n) repeats++;else {candidate=n;repeats=1;}
+        if(repeats>=3) setDetected(n);
+      } else if(data.type==="error") {busy=false;clearInterval(timer);facesRef.current=[];}
+    };
+    worker.onerror=()=>{busy=false;clearInterval(timer);facesRef.current=[];};
+    worker.postMessage({type:"init"});
+    return ()=>{cancelled=true;clearInterval(timer);facesRef.current=[];worker.terminate();};
   }, [status, photo]);
   const capture = async () => {
     const video = videoRef.current;

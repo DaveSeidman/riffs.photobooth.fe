@@ -6,6 +6,8 @@ export const fragranceBackgroundVertex = `
 `;
 export const fragranceBackgroundFragment = `
   uniform sampler2D video;
+  uniform sampler2D blushFluid;
+  uniform float fluidReady;
   uniform sampler2D mask;
   uniform float maskReady;
   uniform float time;
@@ -31,31 +33,10 @@ export const fragranceBackgroundFragment = `
     return n;
   }
   float stars(vec2 p,float scale,float seed);
-  float blushDust(vec2 p,float scale,float seed);
   vec3 blush(vec2 p) {
-    float t=time*.055;
-    vec2 flow=vec2(clouds(p*1.5+vec2(t,0.)),clouds(p*1.5+vec2(4.2,-t*.7)));
-    vec2 q=p*2.5+flow*2.;
-    float curl=clouds(q+vec2(sin(p.y*2.+t),cos(p.x*2.-t))*.6);
-    // Fine, advected mottling breaks the broad swirls into cloudy rose marble.
-    // Fixed spatial noise moves with the flow instead of flickering each frame.
-    vec2 detailUv=p+flow*.22+vec2(t*.08,-t*.04);
-    float medium=noise(detailUv*19.+curl*2.);
-    float fine=noise(detailUv*53.+medium*.7);
-    float grain=noise(detailUv*127.);
-    float folds=.5+.5*sin(q.x*3.+q.y*2.+curl*9.-t);
-    float marble=smoothstep(.22,.79,curl*.48+medium*.30+fine*.15+folds*.07);
-    vec3 color=mix(vec3(.38,.008,.095),vec3(.92,.075,.34),marble);
-    float wisps=smoothstep(.48,.82,medium*.55+fine*.25+curl*.20);
-    color=mix(color,vec3(1.,.57,.69),wisps*.62);
-    color+=vec3(.07,.035,.04)*(grain-.5);
-    color*=.88+.24*fine;
-    // Two slow, curved streams of pearl-pink dust ride the swirling field.
-    float angle=time*.045+length(p)*.5;
-    mat2 orbit=mat2(cos(angle),-sin(angle),sin(angle),cos(angle));
-    vec2 dust=orbit*p+flow*.18;
-    float particles=blushDust(dust,19.,12.)+blushDust(dust*.85+vec2(2.,time*.009),31.,29.)*.6;
-    return color+vec3(1.,.92,.98)*particles*.95;
+    if (fluidReady > .5) return texture2D(blushFluid,vUv).rgb;
+    // Neutral loading fallback until the fluid render targets are initialized.
+    return vec3(.45,.16,.32);
   }
   float stars(vec2 p,float scale,float seed) {
     vec2 grid=p*scale; vec2 cell=floor(grid); vec2 f=fract(grid)-.5;
@@ -66,16 +47,6 @@ export const fragranceBackgroundFragment = `
     float rays=exp(-abs(d.x)*270.-abs(d.y)*35.)+exp(-abs(d.y)*270.-abs(d.x)*35.);
     float shimmer=.75+.25*sin(time*.55+h*42.);
     return step(.94,h)*(point+rays*.14)*shimmer;
-  }
-  float blushDust(vec2 p,float scale,float seed) {
-    vec2 grid=p*scale, cell=floor(grid), f=fract(grid)-.5;
-    vec2 offset=vec2(hash(cell+seed),hash(cell+seed+8.))-.5;
-    vec2 d=f-offset*.65;
-    float h=hash(cell+seed+22.);
-    // Broad pearly motes, about 2.5 times the diameter of Pulse's pinprick stars.
-    float core=exp(-dot(d,d)*260.);
-    float halo=exp(-dot(d,d)*70.)*.22;
-    return step(.94,h)*(core+halo)*(.8+.2*sin(time*.55+h*42.));
   }
   vec3 galaxy(vec2 p, vec2 center, float radius, float tilt, float spin) {
     vec2 q=(p-center)/radius;

@@ -1,6 +1,8 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Color, Vector3, Vector4 } from "three";
+import { FluidField, BLUSH_DEFAULTS } from "./fluid/FluidField.js";
+import { followTarget } from "./followTarget.js";
 import { maskContourGLSL } from "./maskContour.js";
 import { fragranceBackgroundVertex, fragranceBackgroundFragment } from "./fragranceBackground.js";
 
@@ -97,7 +99,21 @@ const fragmentShader = `
 
 export default function PortraitRelighting({ source, settings, vision, facesRef, pose }) {
   const group = useRef(), image = useRef(), background = useRef();
-  const { camera, viewport, controls, size } = useThree();
+  const { gl, camera, viewport, controls, size } = useThree();
+  const fluid = useRef(null);
+  const lightInitialized = useRef(false);
+  const headSeen = useRef(0);
+  const headTarget = useMemo(()=>new Vector4(),[]);
+  const lightDelta = useMemo(()=>new Vector3(),[]);
+  useEffect(()=>{
+    if (!gl.extensions.has("EXT_color_buffer_float")) {
+      console.warn("Blush fluid requires floating-point render targets.");
+      return;
+    }
+    const field=new FluidField(gl,source.width/source.height);
+    fluid.current=field;
+    return ()=>{ fluid.current=null; field.dispose(); };
+  },[gl,source.width,source.height]);
   const direction = useMemo(() => new Vector3(), []);
   const origin = useMemo(() => new Vector3(), []);
   const backColour = useMemo(() => new Color(), []);
@@ -111,12 +127,12 @@ export default function PortraitRelighting({ source, settings, vision, facesRef,
     heads:{value:Array.from({length:4},()=>new Vector4())},
   }), [source]);
   const backgroundUniforms = useMemo(() => ({
-    video:{value:source.texture}, mask:{value:null}, maskReady:{value:1}, time:{value:0}, pulseMix:{value:0},
+    blushFluid:{value:null}, fluidReady:{value:0}, video:{value:source.texture}, mask:{value:null}, maskReady:{value:1}, time:{value:0}, pulseMix:{value:0},
     threshold:{value:.5}, softness:{value:.24}, outlineExtent:{value:2.4}, outlineOffset:{value:10}, clearGap:{value:24}, backgroundOpacity:{value:.75},
     maskTexel:{value:[1/384,1/288]}, screenTexel:{value:[1/720,1/1280]}, imageAspect:{value:source.width/source.height},
   }), [source]);
   const reducedMotion = useMemo(()=>window.matchMedia("(prefers-reduced-motion: reduce)"),[]);
-  useFrame((_, delta) => {
+  useFrame(({clock}, delta) => {
     image.current.userData.segmentation = {status:vision?.current.status, frames:vision?.current.frames};
     const u = image.current.material.uniforms;
     const active = (settings.segmentation ?? true) && vision?.current.ready;
@@ -131,8 +147,11 @@ export default function PortraitRelighting({ source, settings, vision, facesRef,
     image.current.scale.set(source.mirror ? -width : width, width*source.height/source.width, 1);
     u.mask.value = vision.current.texture;
     u.maskTexel.value = [1/vision.current.texture.image.width,1/vision.current.texture.image.height];
-    u.lightPosition.value.copy(pose.current.position);
-    const front = .5 + .5*Math.tanh(pose.current.position.clone().sub(group.current.position).dot(direction)*-1);
+    if (!lightInitialized.current) {
+      u.lightPosition.value.copy(pose.current.position); lightInitialized.current=true;
+    }
+    followTarget(u.lightPosition.value,pose.current.position,delta,5);
+    const front = .5 + .5*Math.tanh(lightDelta.copy(u.lightPosition.value).sub(group.current.position).dot(direction)*-1);
     backColour.set(settings.relightBackColor ?? "#8b80ff");
     u.lightColor.value.set(settings.relightColor ?? "#ff9fce").lerp(backColour,1-front);
     u.strength.value = settings.relight ? settings.relightStrength : 0;
@@ -173,8 +192,24 @@ export default function PortraitRelighting({ source, settings, vision, facesRef,
     pulseColour.set(settings.pulseOutlineColor ?? "#00cfff");
     u.outlineColor.value.lerp(pulseColour,bg.pulseMix.value);
     const faces = facesRef?.current ?? [];
-    u.headCount.value = Math.min(4,faces.length);
-    faces.slice(0,4).forEach((f,i)=>u.heads.value[i].set(f.x+f.width/2,1-f.y-f.height/2,f.width*.6,f.height*.7));
+    if (fluid.current && settings.fragranceBackground !== false && (bg.pulseMix.value < .999 || targetMix < 1)) {
+      fluid.current.tick(Math.min(delta,.033)*(settings.backgroundSpeed ?? 1), {
+        paused:document.hidden || reducedMotion.matches, faces, time:clock.elapsedTime, wall:{height:1},
+      }, {...BLUSH_DEFAULTS,fluidRadius:.12});
+      bg.blushFluid.value=fluid.current.output.texture;
+      bg.fluidReady.value=1;
+    }
+    if (faces.length) {
+      const previousCount=u.headCount.value;
+      u.headCount.value = Math.min(4,faces.length);
+      for(let i=0;i<u.headCount.value;i++) {
+        const f=faces[i];
+        headTarget.set(f.x+f.width/2,1-f.y-f.height/2,f.width*.6,f.height*.7);
+        if (i>=previousCount) u.heads.value[i].copy(headTarget);
+        else u.heads.value[i].lerp(headTarget,1-Math.exp(-Math.min(delta,.1)*7));
+      }
+      headSeen.current=clock.elapsedTime;
+    } else if (clock.elapsedTime-headSeen.current>.4) u.headCount.value=0;
   });
   return <group ref={group} visible={false}>
     <mesh ref={background} renderOrder={-1}>
