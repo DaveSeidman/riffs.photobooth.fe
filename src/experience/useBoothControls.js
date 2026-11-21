@@ -101,20 +101,20 @@ export function useBoothControls() {
       },
       clearcoat: { value: 1, min: 0, max: 1, step: 0.01 },
       clearcoatRoughness: {
-        value: 0.035,
+        value: glassDefaults.clearcoatRoughness,
         min: 0,
         max: 0.5,
         step: 0.005,
         label: "Coat roughness",
       },
       attenuationDistance: {
-        value: 4,
+        value: glassDefaults.attenuationDistance,
         min: 0.1,
         max: 20,
         step: 0.1,
         label: "Tint depth",
       },
-      distortion: { value: 0, min: 0, max: 1, step: 0.01 },
+      distortion: { value: glassDefaults.distortion, min: 0, max: 1, step: 0.01 },
       thickness: { value: glassDefaults.thickness, min: 0, max: 5, step: 0.01 },
       ior: {
         value: glassDefaults.ior,
@@ -147,7 +147,7 @@ export function useBoothControls() {
     }),
     Light: folder({
       cameraEnvironment: { value: true, label: "Camera reflections" },
-      cameraEnvironmentStrength: { value: .8, min: 0, max: 2, step: .05, label: "Camera light" },
+      cameraEnvironmentStrength: { value: glassDefaults.cameraEnvironmentStrength, min: 0, max: 2, step: .05, label: "Camera light" },
       highlights: {
         value: glassDefaults.highlights,
         min: 0,
