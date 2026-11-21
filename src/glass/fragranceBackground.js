@@ -43,46 +43,52 @@ export const fragranceBackgroundFragment = `
     vec2 offset=vec2(hash(cell+seed),hash(cell+seed+8.))-.5;
     vec2 d=f-offset*.65;
     float h=hash(cell+seed+22.);
-    float point=exp(-dot(d,d)*1700.);
-    float rays=exp(-abs(d.x)*270.-abs(d.y)*35.)+exp(-abs(d.y)*270.-abs(d.x)*35.);
-    float shimmer=.75+.25*sin(time*.55+h*42.);
-    return step(.94,h)*(point+rays*.14)*shimmer;
+    // Analytic four-point stars: crisp tapered spikes and a small separate halo.
+    // Pixel-width antialiasing keeps the points stable during slow parallax.
+    float aa=max(fwidth(d.x),fwidth(d.y));
+    float core=1.-smoothstep(.012-aa,.012+aa,length(d));
+    float rayLength=mix(.07,.17,step(.98,h));
+    float rayWidth=.009;
+    float crossShape=min(abs(d.x)/rayWidth+abs(d.y)/rayLength,
+                         abs(d.y)/rayWidth+abs(d.x)/rayLength);
+    float rays=1.-smoothstep(1.-aa/rayWidth,1.+aa/rayWidth,crossShape);
+    float halo=exp(-dot(d,d)*600.)*.10;
+    float shimmer=.88+.12*sin(time*.55+h*42.);
+    return step(.94,h)*(max(core,rays*.85)+halo)*shimmer;
   }
   vec3 galaxy(vec2 p, vec2 center, float radius, float tilt, float spin) {
     vec2 q=(p-center)/radius;
-    float c=cos(tilt), s=sin(tilt);
+    float c=cos(tilt+time*spin*.12), s=sin(tilt+time*spin*.12);
     q=mat2(c,-s,s,c)*q;
     q.y*=1.65;
     float r=length(q);
     float angle=atan(q.y,q.x);
     // Integer arm count keeps the angular seam continuous as the galaxy turns.
-    float arms=.5+.5*cos(angle*3.-r*8.+time*spin);
+    float arms=.5+.5*cos(angle*3.-r*8.);
     float disk=exp(-r*r*1.8);
-    float structure=noise(q*9.+vec2(time*.025,-time*.018));
+    float structure=noise(q*9.);
     float lanes=pow(arms,3.)*disk*smoothstep(.08,.4,r);
     vec3 color=vec3(.12,.16,.42)*disk*.3;
     color+=mix(vec3(.24,.10,.52),vec3(.35,.64,1.),structure)*lanes*.85;
     color+=vec3(1.,.79,.64)*exp(-r*r*65.)*.85;
-    color+=vec3(.73,.78,1.)*pow(structure,9.)*disk*.5;
     return color;
   }
   vec3 pulse(vec2 p) {
-    // Independent flow speeds give the clouds and star planes visible depth.
-    vec2 drift=vec2(time*.014,-time*.009);
+    // Rigid parallax preserves nebula structure; star coordinates never flow or warp.
+    vec2 drift=vec2(time*.004,-time*.0025);
     float gas=clouds(p*2.2+drift);
     float blueCloud=clouds(p*3.+vec2(4.,1.)-drift*.75);
-    vec2 warp=vec2(gas-.45,blueCloud-.45);
-    vec2 detailUv=p+warp*.48+drift*.6;
+    vec2 detailUv=p+drift*.6;
     float filaments=noise(detailUv*23.);
     float dust=noise(detailUv*67.);
-    float band=exp(-pow(p.x*.7+p.y*.5+warp.x*.8,2.)*5.);
+    float band=exp(-pow(p.x*.7+p.y*.5,2.)*5.);
     float lower=1.-smoothstep(-.65,.65,p.y);
     vec3 color=mix(vec3(.028,.002,.055),vec3(.004,.012,.045),lower);
     float nebula=smoothstep(.25,.72,gas*.6+filaments*.27+dust*.13);
     color+=mix(vec3(.32,.012,.29),vec3(.025,.16,.32),lower)*nebula*(.35+.65*band);
     float wisps=pow(clamp(blueCloud*1.35,0.,1.),3.);
     color+=vec3(.12,.055,.28)*wisps*(.4+filaments);
-    color+=vec3(.035,.12,.21)*smoothstep(.48,.8,gas+warp.y*.3)*band;
+    color+=vec3(.035,.12,.21)*smoothstep(.48,.8,gas+blueCloud*.12)*band;
     color*=.82+.3*filaments;
     // Offset galaxies stay visible around the portrait rather than behind its center.
     color+=galaxy(p,vec2(-.38+.035*sin(time*.09),.58),.39,-.55,.18);
@@ -90,8 +96,9 @@ export const fragranceBackgroundFragment = `
     float farStars=stars(p+drift*.20,43.,8.)*.5;
     float midStars=stars(p+drift*.55,25.,1.)*.85;
     float nearStars=stars(p+drift,12.,17.)*1.15;
-    float distant=pow(dust,12.)*.18;
-    return color+vec3(.78,.85,1.)*(farStars+midStars+nearStars+distant);
+    // Keep star emission below the global bloom threshold: the tight analytic
+    // halo above supplies their glow without a postprocessing blur or trail.
+    return min(color+vec3(.84,.91,1.)*(farStars+midStars+nearStars),vec3(.98));
   }
   ${maskContourGLSL}
   void main() {
