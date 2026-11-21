@@ -10,6 +10,7 @@ import { countPhotoFaces } from "./countPhotoFaces.js";
 import PortraitReveal from "./PortraitReveal.jsx";
 import { useSmileVision } from "./useSmileVision.js";
 import { withDeadline } from "./withDeadline.js";
+import { previewShortcut } from "./previewShortcut.js";
 import { createSmileGate } from "./handsFree.js";
 import "./experience.css";
 import "./mirror.css";
@@ -215,18 +216,20 @@ export default function LunarExperience() {
   }, [smile.sample, camera.photo, camera.uploading, controls.visible, phase, count]);
   useEffect(() => {
     const keydown = event => {
-      if (event.repeat || controls.visible || /INPUT|TEXTAREA|SELECT/.test(event.target.tagName)) return;
-      if (event.code === "Escape") { event.preventDefault(); actions.current.reset(); }
-      else if (!camera.photo && ["KeyB", "KeyP", "KeyA"].includes(event.code)) {
-        event.preventDefault(); controls.setPreviewMode({KeyB:"blush",KeyP:"pulse",KeyA:"auto"}[event.code]);
+      const mode=previewShortcut(event);
+      if (!camera.photo && mode) {
+        event.preventDefault(); event.stopPropagation(); controls.setPreviewMode(mode); return;
       }
+      if (event.repeat || event.ctrlKey || event.metaKey || event.altKey || controls.visible || event.target?.isContentEditable || /INPUT|TEXTAREA|SELECT/.test(event.target?.tagName ?? "")) return;
+      if (event.code === "Escape") { event.preventDefault(); actions.current.reset(); }
+
       else if (!camera.photo && event.code === "Space") { event.preventDefault(); actions.current.capture(); }
       else if (camera.photo && phase === "capture" && ["KeyB","KeyP"].includes(event.code)) {
         event.preventDefault(); actions.current.generate({selectedTreatment:event.code === "KeyB" ? "blush" : "pulse"});
       }
     };
-    window.addEventListener("keydown",keydown);
-    return () => window.removeEventListener("keydown",keydown);
+    window.addEventListener("keydown",keydown,true);
+    return () => window.removeEventListener("keydown",keydown,true);
   }, [camera.photo, phase, controls.visible]);
   useEffect(() => {
     if (phase !== "result" || controls.visible) return;
@@ -236,11 +239,6 @@ export default function LunarExperience() {
   return (
     <main className={`lunar-experience lunar-mirror phase-${phase}`}>
       <Leva hidden={!controls.visible} collapsed={false} titleBar={{title:"Lunar / Booth controls"}} />
-      {!camera.photo && countdown === null && <nav className="mirror-mode-switch" aria-label="Preview fragrance">
-        {["blush", "pulse", "auto"].map(mode => <button key={mode} type="button"
-          aria-pressed={controls.previewMode === mode} onClick={() => controls.setPreviewMode(mode)}
-          title={`${mode === "auto" ? "A" : mode === "blush" ? "B" : "P"} — ${mode} preview`}>{mode}</button>)}
-      </nav>}
       {!controls.visible && <div className="mirror-branding" aria-label="RiiFFS Parfums — Lunar">
         <div className="mirror-brand-riiffs">
           <img src={`${import.meta.env.BASE_URL}riiffs/riiffs-logo.png`} alt="RiiFFS" />

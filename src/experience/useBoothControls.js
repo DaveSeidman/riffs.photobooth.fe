@@ -18,8 +18,6 @@ export function useBoothControls() {
     return () => window.removeEventListener("keydown", toggle, true);
   }, []);
   const values = useControls({
-    Blush: button(() => setPreviewMode("blush")),
-    Pulse: button(() => setPreviewMode("pulse")),
     Camera: folder({
       orbit: { value: true, label: "Orbit controls" },
       orbitPan: { value: true, label: "Allow pan" },
