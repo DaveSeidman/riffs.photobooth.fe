@@ -77,24 +77,50 @@ export const fragranceBackgroundFragment = `
     float halo=exp(-dot(d,d)*70.)*.22;
     return step(.94,h)*(core+halo)*(.8+.2*sin(time*.55+h*42.));
   }
+  vec3 galaxy(vec2 p, vec2 center, float radius, float tilt, float spin) {
+    vec2 q=(p-center)/radius;
+    float c=cos(tilt), s=sin(tilt);
+    q=mat2(c,-s,s,c)*q;
+    q.y*=1.65;
+    float r=length(q);
+    float angle=atan(q.y,q.x);
+    // Integer arm count keeps the angular seam continuous as the galaxy turns.
+    float arms=.5+.5*cos(angle*3.-r*8.+time*spin);
+    float disk=exp(-r*r*1.8);
+    float structure=noise(q*9.+vec2(time*.025,-time*.018));
+    float lanes=pow(arms,3.)*disk*smoothstep(.08,.4,r);
+    vec3 color=vec3(.12,.16,.42)*disk*.3;
+    color+=mix(vec3(.24,.10,.52),vec3(.35,.64,1.),structure)*lanes*.85;
+    color+=vec3(1.,.79,.64)*exp(-r*r*65.)*.85;
+    color+=vec3(.73,.78,1.)*pow(structure,9.)*disk*.5;
+    return color;
+  }
   vec3 pulse(vec2 p) {
-    vec2 drift=vec2(time*.003,-time*.002);
+    // Independent flow speeds give the clouds and star planes visible depth.
+    vec2 drift=vec2(time*.014,-time*.009);
     float gas=clouds(p*2.2+drift);
-    float band=exp(-pow((p.x*.65+p.y*.5+sin(p.y*2.)*.18),2.)*6.);
-    // Plum nebula above, dusty cobalt below, with fine interstellar structure.
-    float blueCloud=clouds(p*3.+4.-drift);
-    vec2 detailUv=p+vec2(gas,blueCloud)*.15+drift;
+    float blueCloud=clouds(p*3.+vec2(4.,1.)-drift*.75);
+    vec2 warp=vec2(gas-.45,blueCloud-.45);
+    vec2 detailUv=p+warp*.48+drift*.6;
     float filaments=noise(detailUv*23.);
     float dust=noise(detailUv*67.);
+    float band=exp(-pow(p.x*.7+p.y*.5+warp.x*.8,2.)*5.);
     float lower=1.-smoothstep(-.65,.65,p.y);
-    vec3 color=mix(vec3(.075,.003,.085),vec3(.009,.024,.075),lower);
-    float nebula=smoothstep(.22,.76,gas*.65+filaments*.25+dust*.10);
-    color+=mix(vec3(.24,.008,.19),vec3(.025,.095,.19),lower)*nebula*(.4+.6*band);
-    color+=vec3(.04,.055,.105)*blueCloud*(.5+filaments);
-    color*=.78+.35*filaments+.12*dust;
-    float sparkle=stars(p+drift,20.,1.)+stars(p-drift*.5,37.,8.)*.55;
+    vec3 color=mix(vec3(.028,.002,.055),vec3(.004,.012,.045),lower);
+    float nebula=smoothstep(.25,.72,gas*.6+filaments*.27+dust*.13);
+    color+=mix(vec3(.32,.012,.29),vec3(.025,.16,.32),lower)*nebula*(.35+.65*band);
+    float wisps=pow(clamp(blueCloud*1.35,0.,1.),3.);
+    color+=vec3(.12,.055,.28)*wisps*(.4+filaments);
+    color+=vec3(.035,.12,.21)*smoothstep(.48,.8,gas+warp.y*.3)*band;
+    color*=.82+.3*filaments;
+    // Offset galaxies stay visible around the portrait rather than behind its center.
+    color+=galaxy(p,vec2(-.38+.035*sin(time*.09),.58),.39,-.55,.18);
+    color+=galaxy(p,vec2(.40,-.52+.025*cos(time*.08)),.25,.7,-.13)*.72;
+    float farStars=stars(p+drift*.20,43.,8.)*.5;
+    float midStars=stars(p+drift*.55,25.,1.)*.85;
+    float nearStars=stars(p+drift,12.,17.)*1.15;
     float distant=pow(dust,12.)*.18;
-    return color+vec3(.78,.70,1.)*(sparkle+distant);
+    return color+vec3(.78,.85,1.)*(farStars+midStars+nearStars+distant);
   }
   ${maskContourGLSL}
   void main() {
