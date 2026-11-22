@@ -26,6 +26,8 @@ export default function LunarExperience() {
     [error, setError] = useState(""),
     [countdown, setCountdown] = useState(null),
     [bottleDocked, setBottleDocked] = useState(false),
+    [resetSeconds, setResetSeconds] = useState(60),
+    [stage, setStage] = useState("preparing"),
     [result, setResult] = useState(null),
     [view, setView] = useState("postcard"),
     [revealRun, setRevealRun] = useState(0),
@@ -141,10 +143,12 @@ export default function LunarExperience() {
     const controller = new AbortController();
     request.current = controller;
     setError("");
+    setStage("preparing");
     setPhase("generating");
     try {
       const response = await submitPhoto(blob, {
         style: "dramatic-pose",
+        onProgress: setStage,
         portraitContext: { peopleCount: count, treatment: selectedTreatment },
         signal: controller.signal,
       });
@@ -153,6 +157,7 @@ export default function LunarExperience() {
         throw new Error(
           "The campaign portrait was not returned. Please try again.",
         );
+      setStage("finishing");
       const expected = count;
       if (expected > 1) {
         const imageResponse = await fetch(assetUrl(response.output.photo), {signal:controller.signal});
@@ -209,8 +214,14 @@ export default function LunarExperience() {
   }, [camera.photo, phase, controls.visible]);
   useEffect(() => {
     if (phase !== "result" || controls.visible) return;
-    const timer = setTimeout(()=>actions.current.reset(),60000);
-    return () => clearTimeout(timer);
+    const deadline = Date.now() + 60000;
+    setResetSeconds(60);
+    const timer = setInterval(() => {
+      const remaining = Math.ceil((deadline - Date.now()) / 1000);
+      if (remaining <= 0) actions.current.reset();
+      else setResetSeconds(remaining);
+    }, 250);
+    return () => clearInterval(timer);
   }, [phase, controls.visible]);
   return (
     <main className={`lunar-experience lunar-mirror phase-${phase}`}>
@@ -265,13 +276,13 @@ export default function LunarExperience() {
         <p>{analyzing ? "One moment…" : "Tap a bottle · or press B / P"}</p>
         <button className="mirror-text-button" onClick={reset}>Retake</button>
       </section>}
-      {phase === "generating" && <GenerationScreen key={treatment} treatment={treatment} elapsed={elapsed} />}
+      {phase === "generating" && <GenerationScreen key={treatment} treatment={treatment} elapsed={elapsed} stage={stage} />}
       {phase === "result" && result && <div className={`mirror-result-actions mirror-result-actions--${treatment || "pulse"}`}>
         <div className="mirror-photo-qr">
           <QRCodeSVG value={result.shareUrl || assetUrl(result.postcard)} size={184} level="M" marginSize={4}
             bgColor={treatment === "blush" ? "#fff5fb" : "#f4f2ff"}
             fgColor={treatment === "blush" ? "#70244e" : "#29205e"} title="Scan to open your photo" />
-          <span>Scan for your photo</span>
+          <span>Scan for your photo{!controls.visible && <small style={{display:"block"}}>Booth resets in {resetSeconds}s</small>}</span>
         </div>
         <button onClick={reset}>New photo</button>
       </div>}

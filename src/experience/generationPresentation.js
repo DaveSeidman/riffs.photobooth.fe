@@ -14,10 +14,16 @@ const messages={
     'Your Pulse portrait is still on its journey. Stay in orbit.',
   ],
 };
-export function generationPresentation(treatment,elapsed) {
+const stages = {
+  preparing: 'Preparing your photo',
+  queued: 'Waiting for your turn',
+  generating: 'Creating your portrait',
+  finishing: 'Finishing your photo',
+};
+export function generationPresentation(treatment,elapsed,stage = 'preparing') {
   const mode=treatment==='blush'?'blush':'pulse';
   const seconds=Math.max(0,Number.isFinite(elapsed)?elapsed:0);
   const index=seconds>=45?4:seconds>=26?3:seconds>=16?2:seconds>=8?1:0;
-  // Time-based estimate only: the API returns a finished result, not stage progress.
-  return {mode,message:messages[mode][index],progress:Math.min(94,8+86*(1-Math.exp(-seconds/18)))};
+  const step = Math.max(0, Object.keys(stages).indexOf(stage));
+  return { mode, message: messages[mode][index], step, caption: Object.values(stages)[step] };
 }

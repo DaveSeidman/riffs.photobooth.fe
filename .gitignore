@@ -10,3 +10,4 @@ public/test-results/
 .local/
 *.log
 public/test-frames/
+/after-effects/

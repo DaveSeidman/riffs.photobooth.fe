@@ -85,6 +85,7 @@ export async function submitPhoto(
     promptOverride,
     failureSimulation = "none",
     portraitContext,
+    onProgress,
     signal,
   } = {},
 ) {
@@ -108,6 +109,23 @@ export async function submitPhoto(
   if (promptOverride?.trim())
     form.append("promptOverride", promptOverride.trim());
 
+  const progressId = onProgress && globalThis.crypto?.randomUUID?.();
+  let pollTimer;
+  const pollSignal = signal ? AbortSignal.any([controller.signal, signal]) : controller.signal;
+  if (progressId) {
+    form.append("progressId", progressId);
+    const poll = async () => {
+      try {
+        const response = await fetch(`${appConfig.apiUrl}/api/generation-progress/${progressId}`, { signal: pollSignal });
+        if (response.ok) {
+          const { stage } = await response.json();
+          if (stage && !pollSignal.aborted) onProgress(stage);
+        }
+      } catch { /* The portrait request can finish even if a status update fails. */ }
+      if (!pollSignal.aborted) pollTimer = timers.setTimeout(poll, 1000);
+    };
+    pollTimer = timers.setTimeout(poll, 700);
+  }
   try {
     const response = await fetch(`${appConfig.apiUrl}/submit`, {
       method: "POST",
@@ -125,6 +143,8 @@ export async function submitPhoto(
     }
     throw error;
   } finally {
+    controller.abort();
+    timers.clearTimeout(pollTimer);
     timers.clearTimeout(timeout);
   }
 }
