@@ -226,7 +226,7 @@ export default function LunarExperience() {
     return () => clearInterval(timer);
   }, [phase]);
   return (
-    <main className={`lunar-experience lunar-mirror phase-${phase}`}>
+    <main className={`lunar-experience lunar-mirror phase-${phase}`} data-treatment={treatment}>
       <Leva hidden={!controls.visible} collapsed={false} titleBar={{title:"Lunar / Booth controls"}} />
       {!controls.visible && <div className="mirror-branding" aria-label="RiiFFS Parfums — Lunar">
         <div className="mirror-brand-riiffs">
