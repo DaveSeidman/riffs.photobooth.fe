@@ -21,6 +21,7 @@ export const fragranceBackgroundFragment = `
   uniform float outlineOffset;
   uniform float clearGap;
   uniform float backgroundOpacity;
+  uniform float pulseBackgroundOpacity;
   uniform vec2 maskTexel;
   uniform vec2 screenTexel;
   uniform float imageAspect;
@@ -50,7 +51,7 @@ export const fragranceBackgroundFragment = `
       else if (pulseMix < .001) artwork=blush(p);
       else if (pulseMix > .999) artwork=pulse(p);
       else artwork=mix(blush(p),pulse(p),pulseMix);
-      float artworkAlpha=(1.-windowMask)*clamp(backgroundOpacity,0.,1.);
+      float artworkAlpha=(1.-windowMask)*mix(backgroundOpacity,pulseBackgroundOpacity,pulseMix);
       gl_FragColor=vec4(mix(cameraColor,artwork,artworkAlpha),1.);
     }
     #include <colorspace_fragment>

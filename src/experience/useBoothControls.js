@@ -31,7 +31,8 @@ export function useBoothControls() {
       fragranceBackground: { value: true, label: "Animated backdrop" },
       backgroundStyle: { value: "bottle", options: { "Follow bottle": "bottle", "Blush / pink swirls": "blush", "Pulse / starscape": "pulse" }, label: "World" },
       backgroundGap: { value: 24, min: 0, max: 80, step: 1, label: "Clear gap (px)" },
-      backgroundOpacity: { value: .75, min: 0, max: 1, step: .05, label: "Background opacity" },
+      pulseBackgroundOpacity: { value: .995, min: 0, max: 1, step: .005, label: "Pulse background opacity" },
+      backgroundOpacity: { value: .75, min: 0, max: 1, step: .05, label: "Blush background opacity" },
       backgroundSpeed: { value: 1, min: 0, max: 2, step: .05, label: "Motion speed" },
     }, {collapsed:true}),
     "Heads & light": folder({

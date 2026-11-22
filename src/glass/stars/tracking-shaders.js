@@ -112,7 +112,7 @@ export const atmosphereFragment = `
           float blue=exp(-dot((p-vec2(.12,.55))*vec2(1.5,1.1),(p-vec2(.12,.55))*vec2(1.5,1.1))*3.);
           float rose=exp(-dot((p-vec2(.95,.4))*vec2(1.8,1.2),(p-vec2(.95,.4))*vec2(1.8,1.2))*3.);
           float ribbon=exp(-pow((p.y-.46-sin(p.x*7.)*.18)*5.,2.));
-          vec3 haze=(uCold*blue+uHot*rose)*.022+uMid*ribbon*.009;
+          vec3 haze=(uCold*blue+uHot*rose)*.009+uMid*ribbon*.005;
           // All gas structure is stationary in sky coordinates. Only the shared sky
           // rotation and drift move it; there is no independent boiling or pulsing.
           vec2 n=sky*1.65+vec2(27.4,13.8);
@@ -129,5 +129,5 @@ export const atmosphereFragment = `
           float gas=pow(density,2.1)*(.24+ridges*.92)*(1.-darkLanes*.9);
           vec3 whiteGas=mix(vec3(.82,.86,.96),mix(uCold,uHot,clamp(p.x,0.,1.)),.14);
           vec3 nebula=whiteGas*gas*uNebula*.065;
-          gl_FragColor=vec4(vec3(.001,.0015,.004)+haze+nebula,1.);
+          gl_FragColor=vec4(vec3(.0004,.0007,.002)+haze+nebula,1.);
         }`;

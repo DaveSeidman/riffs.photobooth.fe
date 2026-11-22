@@ -134,7 +134,7 @@ export default function PortraitRelighting({ source, settings, vision, facesRef,
   }), [source]);
   const backgroundUniforms = useMemo(() => ({
     pulseSky:{value:null}, skyReady:{value:0}, skyUvScale:{value:[1,1]}, blushFluid:{value:null}, fluidReady:{value:0}, video:{value:source.texture}, mask:{value:null}, maskReady:{value:1}, time:{value:0}, pulseMix:{value:0},
-    threshold:{value:.5}, softness:{value:.24}, outlineExtent:{value:2.4}, outlineOffset:{value:10}, clearGap:{value:24}, backgroundOpacity:{value:.75},
+    threshold:{value:.5}, softness:{value:.24}, outlineExtent:{value:2.4}, outlineOffset:{value:10}, clearGap:{value:24}, backgroundOpacity:{value:.75}, pulseBackgroundOpacity:{value:.995},
     maskTexel:{value:[1/384,1/288]}, screenTexel:{value:[1/720,1/1280]}, imageAspect:{value:source.width/source.height},
   }), [source]);
   const reducedMotion = useMemo(()=>window.matchMedia("(prefers-reduced-motion: reduce)"),[]);
@@ -186,6 +186,7 @@ export default function PortraitRelighting({ source, settings, vision, facesRef,
     bg.outlineExtent.value = settings.neonOutline === false ? 0 : u.outlineWidth.value*1.6;
     bg.outlineOffset.value = settings.neonOutline === false ? 0 : u.outlineOffset.value;
     bg.clearGap.value = settings.backgroundGap ?? 24;
+    bg.pulseBackgroundOpacity.value = settings.pulseBackgroundOpacity ?? .995;
     bg.backgroundOpacity.value = settings.backgroundOpacity ?? .75;
     const pixelsPerWorld = size.height/view.height;
     bg.screenTexel.value = [1/(width*pixelsPerWorld),1/(width*source.height/source.width*pixelsPerWorld)];
