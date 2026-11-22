@@ -1,16 +1,11 @@
-import React from "react";
+import React, {Suspense,lazy,useEffect,useState} from "react";
 import ReactDOM from "react-dom/client";
-import LunarExperience from "./experience/LunarExperience.jsx";
 import "./base.css";
-
-// One application view. Retire old hash routes without reloading the camera.
-if (location.hash) {
-  const url = new URL(location.href);
-  url.hash = "";
-  history.replaceState(history.state, "", url);
+const LunarExperience=lazy(()=>import('./experience/LunarExperience.jsx'));
+const ReviewGallery=lazy(()=>import('./review/ReviewGallery.jsx'));
+function App() {
+  const [route,setRoute]=useState(location.hash);
+  useEffect(()=>{const update=()=>setRoute(location.hash);window.addEventListener('hashchange',update);return()=>window.removeEventListener('hashchange',update);},[]);
+  return <Suspense fallback={<p>Loading…</p>}>{route==='#/review'?<ReviewGallery/>:<LunarExperience/>}</Suspense>;
 }
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <LunarExperience />
-  </React.StrictMode>,
-);
+ReactDOM.createRoot(document.getElementById("root")).render(<React.StrictMode><App/></React.StrictMode>);

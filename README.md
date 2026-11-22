@@ -51,3 +51,7 @@ The orbit bottles use MeshTransmissionMaterial with a live 64-pixel-per-face cub
 ## Generation interstitial videos
 
 Place `blush.mp4` and `pulse.mp4` in `public/riiffs/`. The generation screen plays the selected video muted, looping and inline below the corner logos, with a separate progress/message footer. Missing videos fall back to a themed background. Use browser-compatible MP4 encoding (H.264). The bar is a labeled time-based estimate and stays below completion until the result arrives. Fragrance selection requires a bottle click/tap or B/P keypress; leaning no longer submits a photo.
+
+## Review route
+
+Open `#/review` on the deployed frontend and enter the backend `REVIEW_TOKEN` access code. Compare source/result images, inspect the exact archived prompt and model settings, and save likeness, quality, bottle accuracy, issue tags, and notes. Older generations explicitly show missing prompt/input provenance. The gallery is loaded separately and does not start the camera.
