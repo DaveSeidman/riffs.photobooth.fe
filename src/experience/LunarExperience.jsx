@@ -4,6 +4,7 @@ import { usePortraitCamera } from "./usePortraitCamera.js";
 import { Leva } from "leva";
 import { QRCodeSVG } from "qrcode.react";
 import { useBoothControls } from "./useBoothControls.js";
+import GenerationScreen from "./GenerationScreen.jsx";
 import FragranceBottle from "./FragranceBottle.jsx";
 import PortraitGlass from "./PortraitGlass.jsx";
 import { countPhotoFaces } from "./countPhotoFaces.js";
@@ -29,9 +30,7 @@ export default function LunarExperience() {
     [view, setView] = useState("postcard"),
     [revealRun, setRevealRun] = useState(0),
     [elapsed, setElapsed] = useState(0),
-    [cue, setCue] = useState("waiting"),
-    [gestureChoice, setGestureChoice] = useState(null),
-    [gestureProgress, setGestureProgress] = useState(0);
+    [cue, setCue] = useState("waiting");
   const glassCanvasRef = useRef(null);
   const request = useRef(null),
     epoch = useRef(0),
@@ -54,18 +53,14 @@ export default function LunarExperience() {
     );
     return () => clearInterval(t);
   }, [phase]);
-  const captureBusy = useRef(false), autoCountdown = useRef(0), choiceHold = useRef(null), choiceOrigin = useRef(null);
+  const captureBusy = useRef(false), autoCountdown = useRef(0);
   const gate = useRef(createSmileGate());
-  const smile = useSmileVision(camera.videoRef, camera.status === "Live camera" && !["generating", "result"].includes(phase) && !controls.visible);
+  const smile = useSmileVision(camera.videoRef, camera.status === "Live camera" && !camera.photo && !["generating", "result"].includes(phase) && !controls.visible);
   const reset = () => {
     captureBusy.current = false;
     setAnalyzing(false);
     autoCountdown.current = 0;
     gate.current = createSmileGate();
-    choiceHold.current = null;
-    choiceOrigin.current = null;
-    setGestureChoice(null);
-    setGestureProgress(0);
     setCue("waiting");
     epoch.current++;
     request.current?.abort();
@@ -124,7 +119,6 @@ export default function LunarExperience() {
           if (id === epoch.current) {
             setCount(Math.max(1, Math.min(4, detected || autoCountdown.current || camera.detected || 1)));
             setPhase("capture");
-            choiceOrigin.current = null;
           }
         }
       } catch (e) {
@@ -147,7 +141,6 @@ export default function LunarExperience() {
     const controller = new AbortController();
     request.current = controller;
     setError("");
-    choiceHold.current = null;
     setPhase("generating");
     try {
       const response = await submitPhoto(blob, {
@@ -195,23 +188,6 @@ export default function LunarExperience() {
       const next = gate.current(sample, sample.timestamp);
       setCue(next);
       if (next === "capture") actions.current.capture({automatic:true});
-    } else if (camera.photo && !captureBusy.current) {
-      if (!sample.centers.length) {
-        choiceHold.current = null; choiceOrigin.current = null; setGestureProgress(0); setGestureChoice(null); return;
-      }
-      const center = 1 - sample.centers.reduce((a,b)=>a+b,0) / sample.centers.length;
-      choiceOrigin.current ??= center;
-      const shift = center - choiceOrigin.current;
-      const choice = shift < -.09 ? "blush" : shift > .09 ? "pulse" : null;
-      if (!choice) {
-        choiceHold.current = null; setGestureProgress(0); setGestureChoice(choice); return;
-      }
-      if (choiceHold.current?.choice !== choice || sample.timestamp - choiceHold.current.last > 700)
-        choiceHold.current = {choice, since:sample.timestamp};
-      choiceHold.current.last = sample.timestamp;
-      const progress = Math.min(1,(sample.timestamp-choiceHold.current.since)/1600);
-      setGestureChoice(choice); setGestureProgress(progress);
-      if (progress === 1) actions.current.generate({selectedTreatment:choice});
     }
   }, [smile.sample, camera.photo, camera.uploading, controls.visible, phase, count]);
   useEffect(() => {
@@ -277,25 +253,19 @@ export default function LunarExperience() {
         <div className="lunar-treatment-choices">
           {["blush","pulse"].map(id=><button key={id} data-testid={`treatment-${id}`}
             aria-label={`Select ${id === "blush" ? "Blush" : "Pulse"}`}
-            className={`lunar-treatment fragrance-button lunar-treatment--${id} ${gestureChoice===id ? "is-tracking" : ""}`}
-            style={{"--hold-progress":gestureChoice===id ? gestureProgress : 0}}
+            className={`lunar-treatment fragrance-button lunar-treatment--${id}`}
             onClick={()=>generate({selectedTreatment:id})} disabled={camera.uploading || analyzing}>
             <span className="fragrance-frame" aria-hidden="true">
-              <svg className="fragrance-progress" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" pathLength="1" /></svg>
             </span>
             <FragranceBottle variant={id} />
             <strong>{id === "blush" ? "Blush" : "Pulse"}</strong>
             <span className="fragrance-select">Select</span>
           </button>)}
         </div>
-        <p>{analyzing ? "One moment…" : smile.sample.status === "ready" ? "Tap a bottle or lean toward it" : "Tap a bottle · or press B / P"}</p>
+        <p>{analyzing ? "One moment…" : "Tap a bottle · or press B / P"}</p>
         <button className="mirror-text-button" onClick={reset}>Retake</button>
       </section>}
-      {phase === "generating" && <div className="mirror-prompt mirror-processing" role="status">
-        <span className="lunar-spinner" />
-        <p>{elapsed < 40 ? `Creating ${treatment === "blush" ? "Blush" : "Pulse"}…` : "Still creating…"}</p>
-        <button className="mirror-text-button" onClick={reset}>Cancel</button>
-      </div>}
+      {phase === "generating" && <GenerationScreen key={treatment} treatment={treatment} elapsed={elapsed} />}
       {phase === "result" && result && <div className={`mirror-result-actions mirror-result-actions--${treatment || "pulse"}`}>
         <div className="mirror-photo-qr">
           <QRCodeSVG value={result.shareUrl || assetUrl(result.postcard)} size={184} level="M" marginSize={4}

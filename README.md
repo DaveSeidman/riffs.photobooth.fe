@@ -47,3 +47,7 @@ Pulse reuses the seeded particle layout, star shaders, eclipse palette, nebula s
 ## Camera-lit orbit bottles
 
 The orbit bottles use MeshTransmissionMaterial with a live 64-pixel-per-face cube environment. A separate environment scene wraps the camera texture around the glass and lifts bright pixels to simulate HDR lighting, alongside restrained studio strips. It is a lighting approximation from an LDR camera, not measured HDR capture. F1 → Light → Camera reflections toggles the experiment; Camera light adjusts the feed contribution. The static studio environment remains available when disabled.
+
+## Generation interstitial videos
+
+Place `blush.mp4` and `pulse.mp4` in `public/riiffs/`. The generation screen plays the selected video muted, looping and inline below the corner logos, with a separate progress/message footer. Missing videos fall back to a themed background. Use browser-compatible MP4 encoding (H.264). The bar is a labeled time-based estimate and stays below completion until the result arrives. Fragrance selection requires a bottle click/tap or B/P keypress; leaning no longer submits a photo.
