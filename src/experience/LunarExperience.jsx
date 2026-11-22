@@ -16,6 +16,8 @@ import { createSmileGate } from "./handsFree.js";
 import "./experience.css";
 import "./mirror.css";
 
+const RESULT_SECONDS = 30;
+
 export default function LunarExperience() {
   const camera = usePortraitCamera();
   const controls = useBoothControls();
@@ -26,7 +28,7 @@ export default function LunarExperience() {
     [error, setError] = useState(""),
     [countdown, setCountdown] = useState(null),
     [bottleDocked, setBottleDocked] = useState(false),
-    [resetSeconds, setResetSeconds] = useState(60),
+    [resetSeconds, setResetSeconds] = useState(RESULT_SECONDS),
     [stage, setStage] = useState("preparing"),
     [result, setResult] = useState(null),
     [view, setView] = useState("postcard"),
@@ -213,16 +215,16 @@ export default function LunarExperience() {
     return () => window.removeEventListener("keydown",keydown,true);
   }, [camera.photo, phase, controls.visible]);
   useEffect(() => {
-    if (phase !== "result" || controls.visible) return;
-    const deadline = Date.now() + 60000;
-    setResetSeconds(60);
+    if (phase !== "result") return;
+    const deadline = Date.now() + RESULT_SECONDS * 1000;
+    setResetSeconds(RESULT_SECONDS);
     const timer = setInterval(() => {
       const remaining = Math.ceil((deadline - Date.now()) / 1000);
       if (remaining <= 0) actions.current.reset();
       else setResetSeconds(remaining);
     }, 250);
     return () => clearInterval(timer);
-  }, [phase, controls.visible]);
+  }, [phase]);
   return (
     <main className={`lunar-experience lunar-mirror phase-${phase}`}>
       <Leva hidden={!controls.visible} collapsed={false} titleBar={{title:"Lunar / Booth controls"}} />
@@ -282,9 +284,9 @@ export default function LunarExperience() {
           <QRCodeSVG value={result.shareUrl || assetUrl(result.postcard)} size={184} level="M" marginSize={4}
             bgColor={treatment === "blush" ? "#fff5fb" : "#f4f2ff"}
             fgColor={treatment === "blush" ? "#70244e" : "#29205e"} title="Scan to open your photo" />
-          <span>Scan for your photo{!controls.visible && <small style={{display:"block"}}>Booth resets in {resetSeconds}s</small>}</span>
+          <span>Scan for your photo<small role="timer" style={{display:"block",fontVariantNumeric:"tabular-nums"}}>Booth resets in {resetSeconds}s</small></span>
         </div>
-        <button onClick={reset}>New photo</button>
+        <button onClick={reset}>Start Over</button>
       </div>}
       {(error || camera.error) && <p className="mirror-error" role="alert">{error || camera.error}</p>}
     </main>

@@ -62,6 +62,7 @@
   position: relative; inset: auto; z-index: 12; align-items: center; flex-direction: column;
   gap: 14px; padding: 16px 24px max(24px, env(safe-area-inset-bottom)); background: #090d29;
 }
+.phase-result .mirror-result-actions--pulse { background: #000; }
 .phase-result .mirror-result-actions--blush { --qr-paper: #fff5fb; --qr-ink: #70244e; --qr-border: #efa6cf; --qr-glow: #ff63bc33; }
 .mirror-photo-qr { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 12px 12px 16px; border: 1px solid var(--qr-border); border-radius: 18px; background: var(--qr-paper); color: var(--qr-ink); box-shadow: 0 0 24px var(--qr-glow); font-size: 16px; }
 .mirror-photo-qr svg { display: block; flex: none; position: static; border-radius: 8px; width: clamp(150px, 22vw, 200px); height: clamp(150px, 22vw, 200px); }
@@ -97,8 +98,8 @@
 .generation-screen--blush { --generation-accent: #ffc3df; background: #180b18; }
 .generation-film { width: 100%; min-height: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 45%, #23315f, #060916 75%); }
 .generation-screen--blush .generation-film { background: radial-gradient(ellipse at 50% 45%, #74344f, #180b18 75%); }
-.generation-film video { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center top; }
-.generation-footer { padding: clamp(26px, 4vh, 76px) 8% max(36px, env(safe-area-inset-bottom)); text-align: center; }
+.generation-film video { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
+.generation-footer { padding: clamp(16px, 1.5vh, 28px) 8% max(36px, env(safe-area-inset-bottom)); text-align: center; }
 .generation-message { color: #fff; font-size: clamp(20px, 2.8vw, 32px); line-height: 1.45; margin: 0 auto 28px; max-width: 760px; min-height: 2.9em; text-wrap: balance; }
 .generation-progress { height: 5px; overflow: hidden; border-radius: 99px; background: #ffffff24; }
 .generation-progress span { display: block; width: 100%; height: 100%; background: var(--generation-accent); transform-origin: left; transition: transform 1s linear; }
