@@ -20,6 +20,15 @@ const RESULT_SECONDS = 30;
 
 export default function LunarExperience() {
   const camera = usePortraitCamera();
+  const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
+  useEffect(() => {
+    const updateFullscreen = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", updateFullscreen);
+    return () => document.removeEventListener("fullscreenchange", updateFullscreen);
+  }, []);
+  const enterFullscreen = async () => {
+    try { await document.documentElement.requestFullscreen(); } catch (error) { console.warn("Fullscreen unavailable", error); }
+  };
   const controls = useBoothControls();
   const [phase, setPhase] = useState("welcome"),
     [count, setCount] = useState(1),
@@ -228,6 +237,7 @@ export default function LunarExperience() {
   return (
     <main className={`lunar-experience lunar-mirror phase-${phase}`} data-treatment={treatment}>
       <Leva hidden={!controls.visible} collapsed={false} titleBar={{title:"Lunar / Booth controls"}} />
+      {!controls.visible && !isFullscreen && <button className="mirror-fullscreen-button" onClick={enterFullscreen}>Fullscreen</button>}
       {!controls.visible && <div className="mirror-branding" aria-label="RiiFFS Parfums — Lunar">
         <div className="mirror-brand-riiffs">
           <img src={`${import.meta.env.BASE_URL}riiffs/riiffs-logo.png`} alt="RiiFFS" />

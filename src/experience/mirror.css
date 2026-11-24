@@ -125,3 +125,5 @@
     to { transform: translateX(100%); }
   }
 }
+
+.mirror-fullscreen-button { position: absolute; z-index: 15; top: max(24px, env(safe-area-inset-top)); right: max(24px, env(safe-area-inset-right)); }
