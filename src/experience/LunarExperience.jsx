@@ -290,6 +290,10 @@ export default function LunarExperience() {
       </section>}
       {phase === "generating" && <GenerationScreen key={treatment} treatment={treatment} elapsed={elapsed} stage={stage} />}
       {phase === "result" && result && <div className={`mirror-result-actions mirror-result-actions--${treatment || "pulse"}`}>
+        <div className="mirror-reset-track" aria-hidden="true" style={{
+          "--reset-duration": `${RESULT_SECONDS}s`,
+          "--reset-remaining": resetSeconds / RESULT_SECONDS,
+        }}><div className="mirror-reset-line" /></div>
         <div className="mirror-photo-qr">
           <QRCodeSVG value={result.shareUrl || assetUrl(result.postcard)} size={184} level="M" marginSize={4}
             bgColor={treatment === "blush" ? "#fff5fb" : "#f4f2ff"}
