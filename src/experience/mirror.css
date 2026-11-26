@@ -8,7 +8,7 @@
 .mirror-prompt { position: absolute; z-index: 10; top: 12%; left: 8%; right: 8%; text-align: center; font-size: clamp(24px, 4.5vw, 48px); text-shadow: 0 2px 20px #000, 0 1px 4px #000; pointer-events: none; }
 .mirror-prompt button { pointer-events: auto; }
 .lunar-mirror button:not(.lunar-treatment):not(.mirror-shutter) { border: 1px solid #ffffff55; border-radius: 30px; background: #110b1bd9; color: #fff; padding: 12px 22px; font-size: 16px; }
-.lunar-mirror .mirror-shutter { position: absolute; z-index: 12; bottom: max(5%, env(safe-area-inset-bottom)); left: calc(50% - 60px); width: 120px; height: 120px; border-radius: 50%; background: #ffffffbb; border: 4px solid #fff; box-shadow: 0 0 0 4px #0004, inset 0 0 0 4px #282038; }
+.lunar-mirror .mirror-shutter { position: absolute; z-index: 12; bottom: max(9%, calc(env(safe-area-inset-bottom) + 36px)); left: calc(50% - 60px); width: 120px; height: 120px; border-radius: 50%; background: #ffffffbb; border: 4px solid #fff; box-shadow: 0 0 0 4px #0004, inset 0 0 0 4px #282038; }
 .mirror-result-actions { position: absolute; bottom: 4%; left: 0; right: 0; z-index: 12; display: flex; justify-content: center; gap: 16px; }
 .mirror-error { position: absolute; z-index: 20; top: 3%; left: 5%; right: 5%; padding: 16px; border-radius: 12px; color: #fff; background: #681f3ce8; text-align: center; font-size: 16px; }
 .mirror-dev-tools { position: absolute; z-index: 30; bottom: 10px; left: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; max-width: 90%; padding: 12px; background: #090612ee; font-size: 14px; }
@@ -20,7 +20,7 @@
   --bottle-height: clamp(124px, min(38vw, 32dvh), 330px);
   --pedestal-face: clamp(120px, 26dvh, 300px);
   --pedestal-top: clamp(10px, 2dvh, 23px);
-  --display-gap: clamp(85px, 22vw, 210px);
+  --display-gap: clamp(150px, 28vw, 250px);
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   color: #292327;
@@ -68,17 +68,27 @@
   box-shadow: none; transform: none; overflow: visible;
   visibility: hidden;
 }
-.mirror-choice .fragrance-button.lunar-treatment--blush { --pedestal-entry-x: -114%; --pedestal-entry-angle: 16deg; }
-.mirror-choice .fragrance-button.lunar-treatment--pulse { --pedestal-entry-x: 114%; --pedestal-entry-angle: -16deg; }
+.mirror-choice .fragrance-button.lunar-treatment--blush { transform-origin: 50vw center; }
+.mirror-choice .fragrance-button.lunar-treatment--pulse { transform-origin: calc(100% - 50vw) center; }
 .lunar-experience .mirror-choice .lunar-treatment-choices:not(:has(.fragrance-bottle[data-ready="false"])) .fragrance-button {
   visibility: visible;
   pointer-events: auto;
   animation: mirror-reveal-pedestal var(--pullback-duration) var(--pullback-ease) both;
 }
 @keyframes mirror-reveal-pedestal {
-  from { transform: perspective(850px) translate3d(var(--pedestal-entry-x), 7%, 160px) rotateY(var(--pedestal-entry-angle)) scale(1.22); }
-  to { transform: perspective(850px) translate3d(0, 0, 0) rotateY(0) scale(1); }
+  from { transform: scale(2.6); }
+  to { transform: scale(1); }
 }
+.is-leaving-choice .mirror-choice { pointer-events: none; }
+.is-leaving-choice .mirror-choice-controls { animation: mirror-retake-controls 180ms ease-in both !important; }
+.lunar-mirror.is-leaving-choice .lunar-captured-photo {
+  animation: mirror-photo-pullback 900ms cubic-bezier(.6, 0, .8, .3) reverse both !important;
+}
+.lunar-experience.lunar-mirror.is-leaving-choice .mirror-choice .fragrance-button {
+  pointer-events: none;
+  animation: mirror-reveal-pedestal 900ms cubic-bezier(.6, 0, .8, .3) reverse both !important;
+}
+@keyframes mirror-retake-controls { to { opacity: 0; } }
 .fragrance-bottle {
   position: relative; z-index: 1;
   display: block; width: 100%; height: var(--bottle-height);
@@ -121,10 +131,19 @@
   background: linear-gradient(#d5d5d5, #f7f7f7);
   mask: center / contain no-repeat;
 }
+.fragrance-tap {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 42px; margin-top: clamp(12px, 2.2dvh, 24px); padding: 0 14px;
+  border: 1px solid #bda8b3; border-radius: 999px;
+  background: #fff; color: #594550;
+  font: 600 clamp(11px, 1.8vw, 15px)/1 "DM Sans", sans-serif;
+  box-shadow: 0 2px 8px #6a4d5d1c;
+}
+.fragrance-button:active .fragrance-tap { background: #f4e2ec; }
 .mirror-choice .fragrance-button:hover:not(:disabled) .fragrance-pedestal { filter: brightness(1.07); }
 .mirror-choice .fragrance-button:focus-visible { outline: 2px solid #796275; outline-offset: 3px; }
 .mirror-choice-controls {
-  position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%;
+  position: absolute; bottom: max(48px, calc(env(safe-area-inset-bottom) + 32px)); left: 50%;
   width: calc(var(--display-gap) - 10px);
   transform: translateX(-50%);
   pointer-events: auto;
@@ -141,7 +160,11 @@
 .lunar-mirror:has(.mirror-choice) button.mirror-fullscreen-button {
   border-color: #dcd2d9; background: #ffffffdb; color: #342a32;
 }
-.lunar-mirror .mirror-choice-controls button.mirror-text-button { padding: 8px 12px; font-size: 13px; }
+.lunar-mirror .mirror-choice-controls button.mirror-text-button {
+  min-width: 124px; min-height: 60px; padding: 15px 22px;
+  font-size: 18px; font-weight: 600;
+  border-color: #ac929f; box-shadow: 0 5px 18px #65515c33;
+}
 .lunar-mirror:has(.mirror-choice) button.mirror-fullscreen-button {
   top: max(12px, env(safe-area-inset-top)); right: auto; left: 50%;
   transform: translateX(-50%);
@@ -206,11 +229,30 @@
 /* Give the postcard and QR footer their own space; never cover printed captions. */
 .lunar-mirror.phase-result { display: grid; grid-template-rows: minmax(0, 1fr) auto; }
 .phase-result .mirror-stage { position: relative; inset: auto; width: 100%; height: 100%; min-height: 0; }
+.phase-result .mirror-stage > .lunar-portrait-reveal {
+  top: clamp(110px, 15vh, 180px);
+  height: calc(100% - clamp(110px, 15vh, 180px));
+}
+.mirror-editorial-title {
+  position: absolute; z-index: 8; top: 0; left: 24%; right: 24%;
+  height: clamp(110px, 15vh, 180px);
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  gap: clamp(8px, 1.3vh, 16px); pointer-events: none;
+}
+.mirror-editorial-title img { display: block; object-fit: contain; }
+.mirror-editorial-riiffs { width: clamp(60px, 9vw, 112px); filter: invert(1); }
+.mirror-editorial-lunar { width: min(100%, 450px); filter: brightness(0) invert(1); }
+.phase-result[data-treatment="blush"] .mirror-editorial-riiffs,
+.phase-result[data-treatment="blush"] .mirror-editorial-lunar { filter: brightness(0); }
 .phase-result .mirror-result-actions {
   --qr-paper: #f4f2ff; --qr-ink: #29205e; --qr-border: #a795e8; --qr-glow: #9a76ff33;
   position: relative; inset: auto; z-index: 12; align-items: center; flex-direction: column;
-  gap: 14px; padding: 16px 24px max(24px, env(safe-area-inset-bottom)); background: #090d29;
+  gap: 14px; padding: 16px 24px max(48px, calc(env(safe-area-inset-bottom) + 32px)); background: #090d29;
 }
+.phase-result .mirror-result-actions > button { min-width: 160px; min-height: 60px; font-size: 19px; font-weight: 600; }
+.is-leaving-result .mirror-stage,
+.is-leaving-result .mirror-result-actions { pointer-events: none; animation: mirror-result-exit 600ms ease-in both; }
+@keyframes mirror-result-exit { to { opacity: 0; transform: scale(0.96); } }
 .phase-result .mirror-result-actions--pulse { background: #000; }
 .phase-result .mirror-result-actions--blush { --qr-paper: #fff5fb; --qr-ink: #70244e; --qr-border: #efa6cf; --qr-glow: #ff63bc33; }
 .mirror-reset-track { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--qr-glow); }
@@ -229,7 +271,7 @@
 .mirror-photo-qr svg { display: block; flex: none; position: static; border-radius: 8px; width: clamp(150px, 22vw, 200px); height: clamp(150px, 22vw, 200px); }
 .mirror-photo-qr > span { display: block; position: static; line-height: 1.4; }
 @media (max-height: 650px) {
-  .phase-result .mirror-result-actions { flex-direction: row; padding: 12px; }
+  .phase-result .mirror-result-actions { flex-direction: row; padding: 12px 24px max(32px, calc(env(safe-area-inset-bottom) + 20px)); }
   .mirror-photo-qr { flex-direction: row; padding: 8px 16px 8px 8px; }
   .mirror-photo-qr svg { width: 120px; height: 120px; }
 }

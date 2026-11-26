@@ -47,21 +47,24 @@ export default function LunarExperience() {
     [countdown, setCountdown] = useState(null),
     [bottleDocked, setBottleDocked] = useState(false),
     [resetSeconds, setResetSeconds] = useState(RESULT_SECONDS),
+    [leavingResult, setLeavingResult] = useState(false),
+    [leavingChoice, setLeavingChoice] = useState(false),
     [stage, setStage] = useState("preparing"),
     [result, setResult] = useState(null),
-    [view, setView] = useState("postcard"),
     [revealRun, setRevealRun] = useState(0),
     [elapsed, setElapsed] = useState(0),
     [cue, setCue] = useState("waiting");
   const glassCanvasRef = useRef(null);
   const request = useRef(null),
     epoch = useRef(0),
-    countdownTimer = useRef(null);
+    countdownTimer = useRef(null),
+    resetTransitionTimer = useRef(null);
   useEffect(
     () => () => {
       epoch.current++;
       request.current?.abort();
       clearInterval(countdownTimer.current);
+      clearTimeout(resetTransitionTimer.current);
     },
     [],
   );
@@ -79,6 +82,9 @@ export default function LunarExperience() {
   const gate = useRef(createSmileGate());
   const smile = useSmileVision(camera.videoRef, camera.status === "Live camera" && !camera.photo && !["generating", "result"].includes(phase) && !controls.visible);
   const reset = () => {
+    clearTimeout(resetTransitionTimer.current);
+    setLeavingResult(false);
+    setLeavingChoice(false);
     captureBusy.current = false;
     setAnalyzing(false);
     autoCountdown.current = 0;
@@ -96,6 +102,18 @@ export default function LunarExperience() {
     setRevealRun(0);
     setPhase("welcome");
     setError("");
+  };
+  const startOver = () => {
+    if (leavingResult) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { reset(); return; }
+    setLeavingResult(true);
+    resetTransitionTimer.current = setTimeout(() => actions.current.reset(), 600);
+  };
+  const retake = () => {
+    if (leavingChoice) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { reset(); return; }
+    setLeavingChoice(true);
+    resetTransitionTimer.current = setTimeout(() => actions.current.reset(), 900);
   };
   const capture = ({ automatic = false } = {}) => {
     if (captureBusy.current || camera.photo || camera.status !== "Live camera" || camera.uploading) return;
@@ -190,7 +208,6 @@ export default function LunarExperience() {
         }
       }
       setResult(response.output);
-      setView("postcard");
       setPhase("result");
     } catch (e) {
       if (id === epoch.current) {
@@ -204,7 +221,7 @@ export default function LunarExperience() {
   const actions = useRef({});
   actions.current = { capture, generate, reset };
   const choosingFragrance = Boolean(camera.photo && phase === "capture");
-  useBoothInactivity(choosingFragrance ? "review" : phase, () => actions.current.reset(), 30_000);
+  useBoothInactivity(choosingFragrance && !leavingChoice ? "review" : phase, () => actions.current.reset(), 30_000);
   useEffect(() => {
     if (camera.photo && phase === "welcome") setPhase("capture");
   }, [camera.photo, phase]);
@@ -255,7 +272,7 @@ export default function LunarExperience() {
     return () => window.removeEventListener("lunar:toggle-perfume-selection", toggleSelection);
   }, [camera.photo, camera.status, phase]);
   useEffect(() => {
-    if (phase !== "result") return;
+    if (phase !== "result" || leavingResult) return;
     const deadline = Date.now() + RESULT_SECONDS * 1000;
     setResetSeconds(RESULT_SECONDS);
     const timer = setInterval(() => {
@@ -264,9 +281,9 @@ export default function LunarExperience() {
       else setResetSeconds(remaining);
     }, 250);
     return () => clearInterval(timer);
-  }, [phase]);
+  }, [phase, leavingResult]);
   return (
-    <main className={`lunar-experience lunar-mirror phase-${phase}`} data-treatment={treatment}>
+    <main className={`lunar-experience lunar-mirror phase-${phase}${leavingResult ? " is-leaving-result" : ""}${leavingChoice ? " is-leaving-choice" : ""}`} data-treatment={treatment}>
       <Leva hidden={!controls.visible} collapsed={false} titleBar={{title:"Lunar / Booth controls"}} />
       {!controls.visible && !isFullscreen && <button className="mirror-fullscreen-button" onClick={enterFullscreen}>Fullscreen</button>}
       {!controls.visible && <div className="mirror-branding" aria-label="RiiFFS Parfums — Lunar">
@@ -288,8 +305,14 @@ export default function LunarExperience() {
             settings={{...controls.settings, orbit:controls.visible && controls.settings.orbit}} />
         )}
         {camera.photo && phase !== "result" && <img className="lunar-captured-photo" src={camera.photo.url} alt="Your captured photo" />}
-        {phase === "result" && result && <PortraitReveal key={`${result.photoId}:${revealRun}`}
-          original={camera.photo?.url || assetUrl(result.sourcePhoto)} generated={assetUrl(view === "postcard" ? result.postcard : result.photo)} />}
+        {phase === "result" && result && <>
+          <PortraitReveal key={`${result.photoId}:${revealRun}`}
+            original={camera.photo?.url || assetUrl(result.sourcePhoto)} generated={assetUrl(result.photo)} />
+          <div className="mirror-editorial-title" aria-label={`RiiFFS Lunar ${treatment === "blush" ? "Blush" : "Pulse"}`}>
+            <img className="mirror-editorial-riiffs" src={`${import.meta.env.BASE_URL}riiffs/riiffs-logo.png`} alt="" />
+            <img className="mirror-editorial-lunar" src={`${import.meta.env.BASE_URL}riiffs/lunar-${treatment === "blush" ? "blush" : "pulse"}.svg`} alt="" />
+          </div>
+        </>}
       </div>
       {!camera.photo && countdown === null && <div className="mirror-prompt" role="status" aria-live="polite">
         {camera.status === "Camera unavailable" ? <button onClick={camera.start}>Enable camera</button>
@@ -320,13 +343,14 @@ export default function LunarExperience() {
               <span className="fragrance-emboss">
                 <span style={{ maskImage: `url("${import.meta.env.BASE_URL}riiffs/lunar-${id}.svg")` }} />
               </span>
+              <span className="fragrance-tap">Tap to choose</span>
             </span>
           </button>)}
         </div>
         <div className="mirror-choice-controls">
           <h1 className="mirror-choice-title">Find your fragrance</h1>
           <p>{analyzing ? "One moment…" : "Tap a bottle"}</p>
-          <button className="mirror-text-button" onClick={reset}>Retake</button>
+          <button className="mirror-text-button" onClick={retake} disabled={leavingChoice}>Retake</button>
         </div>
       </section>}
       {phase === "generating" && <GenerationScreen key={treatment} treatment={treatment} elapsed={elapsed} stage={stage} />}
@@ -341,7 +365,7 @@ export default function LunarExperience() {
             fgColor={treatment === "blush" ? "#70244e" : "#29205e"} title="Scan to open your photo" />
           <span>Scan for your photo<small role="timer" style={{display:"block",fontVariantNumeric:"tabular-nums"}}>Booth resets in {resetSeconds}s</small></span>
         </div>
-        <button onClick={reset}>Start Over</button>
+        <button onClick={startOver} disabled={leavingResult}>Start Over</button>
       </div>}
       {(error || camera.error) && <p className="mirror-error" role="alert">{error || camera.error}</p>}
     </main>
