@@ -5,7 +5,7 @@ import { Leva } from "leva";
 import { QRCodeSVG } from "qrcode.react";
 import { useBoothControls } from "./useBoothControls.js";
 import GenerationScreen from "./GenerationScreen.jsx";
-import FragranceBottle from "./FragranceBottle.jsx";
+import FragranceBottle, { preloadFragranceDisplays } from "./FragranceBottle.jsx";
 import PortraitGlass from "./PortraitGlass.jsx";
 import { countPhotoFaces } from "./countPhotoFaces.js";
 import PortraitReveal from "./PortraitReveal.jsx";
@@ -13,6 +13,7 @@ import { useSmileVision } from "./useSmileVision.js";
 import { withDeadline } from "./withDeadline.js";
 import { previewShortcut } from "./previewShortcut.js";
 import { createSmileGate } from "./handsFree.js";
+import { useBoothInactivity } from "../hooks/useBoothInactivity.js";
 import "./experience.css";
 import "./mirror.css";
 
@@ -20,6 +21,14 @@ const RESULT_SECONDS = 30;
 
 export default function LunarExperience() {
   const camera = usePortraitCamera();
+  useEffect(() => {
+    if (window.requestIdleCallback) {
+      const id = window.requestIdleCallback(preloadFragranceDisplays, { timeout: 1500 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = window.setTimeout(preloadFragranceDisplays, 200);
+    return () => window.clearTimeout(id);
+  }, []);
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
   useEffect(() => {
     const updateFullscreen = () => setIsFullscreen(Boolean(document.fullscreenElement));
@@ -194,6 +203,8 @@ export default function LunarExperience() {
   };
   const actions = useRef({});
   actions.current = { capture, generate, reset };
+  const choosingFragrance = Boolean(camera.photo && phase === "capture");
+  useBoothInactivity(choosingFragrance ? "review" : phase, () => actions.current.reset(), 30_000);
   useEffect(() => {
     if (camera.photo && phase === "welcome") setPhase("capture");
   }, [camera.photo, phase]);
@@ -222,7 +233,27 @@ export default function LunarExperience() {
     };
     window.addEventListener("keydown",keydown,true);
     return () => window.removeEventListener("keydown",keydown,true);
-  }, [camera.photo, phase, controls.visible]);
+  }, [camera.photo, camera.status, phase, controls.visible]);
+  useEffect(() => {
+    const toggleSelection = async () => {
+      if (camera.photo && phase === "capture") { actions.current.reset(); return; }
+      if (camera.photo || phase !== "welcome" || camera.status !== "Live camera" || captureBusy.current) return;
+      captureBusy.current = true;
+      const id = epoch.current;
+      try {
+        const canvas = glassCanvasRef.current;
+        const blob = canvas ? await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.94)) : null;
+        if (id !== epoch.current) return;
+        if (blob) camera.setCaptured(blob);
+        else await camera.capture();
+        if (id === epoch.current) setPhase("capture");
+      } catch (error) {
+        if (id === epoch.current) setError(error.message);
+      } finally { captureBusy.current = false; }
+    };
+    window.addEventListener("lunar:toggle-perfume-selection", toggleSelection);
+    return () => window.removeEventListener("lunar:toggle-perfume-selection", toggleSelection);
+  }, [camera.photo, camera.status, phase]);
   useEffect(() => {
     if (phase !== "result") return;
     const deadline = Date.now() + RESULT_SECONDS * 1000;
@@ -251,9 +282,10 @@ export default function LunarExperience() {
       <div className="mirror-stage">
         <video ref={camera.videoRef} autoPlay playsInline muted className="lunar-camera"
           style={{opacity:camera.photo || phase === "result" ? 0 : 1}} />
-        {camera.status === "Live camera" && !camera.photo && phase !== "result" && (
+        {camera.status === "Live camera" && (
           <PortraitGlass videoRef={camera.videoRef} facesRef={camera.facesRef} canvasRef={glassCanvasRef}
-            recede={bottleDocked} settings={{...controls.settings, orbit:controls.visible && controls.settings.orbit}} />
+            visible={!camera.photo && phase !== "result"} recede={bottleDocked}
+            settings={{...controls.settings, orbit:controls.visible && controls.settings.orbit}} />
         )}
         {camera.photo && phase !== "result" && <img className="lunar-captured-photo" src={camera.photo.url} alt="Your captured photo" />}
         {phase === "result" && result && <PortraitReveal key={`${result.photoId}:${revealRun}`}
@@ -268,25 +300,34 @@ export default function LunarExperience() {
           : cue === "settling" ? "Stay together"
           : "Step into frame"}
       </div>}
-      {countdown !== null && <div className="lunar-countdown" role="status" aria-live="assertive">{countdown}</div>}
+      {countdown !== null && <div className="lunar-countdown mirror-countdown" data-final={countdown === 1} role="status" aria-live="assertive">
+        <div className="mirror-countdown-dial" key={countdown}>
+          <span className="mirror-countdown-number">{countdown}</span>
+        </div>
+        <span className="mirror-countdown-cue">{countdown === 1 ? "Smile!" : "Strike a pose"}</span>
+      </div>}
+      {phase === "capture" && cue === "capturing" && <div className="mirror-shutter-flash" aria-hidden="true" />}
       {!camera.photo && countdown === null && !captureBusy.current && camera.status === "Live camera" &&
         <button className="mirror-shutter" aria-label="Take photo" onClick={()=>capture()} disabled={camera.uploading} />}
-      {camera.photo && phase === "capture" && <section className="mirror-choice" aria-label="Choose your treatment">
-        <h1 className="mirror-choice-title">find your fragrance</h1>
+      {choosingFragrance && <section className="mirror-choice" aria-label="Choose your treatment">
         <div className="lunar-treatment-choices">
           {["blush","pulse"].map(id=><button key={id} data-testid={`treatment-${id}`}
             aria-label={`Select ${id === "blush" ? "Blush" : "Pulse"}`}
             className={`lunar-treatment fragrance-button lunar-treatment--${id}`}
             onClick={()=>generate({selectedTreatment:id})} disabled={camera.uploading || analyzing}>
-            <span className="fragrance-frame" aria-hidden="true">
-            </span>
             <FragranceBottle variant={id} />
-            <strong>{id === "blush" ? "Blush" : "Pulse"}</strong>
-            <span className="fragrance-select">Select</span>
+            <span className="fragrance-pedestal" aria-hidden="true">
+              <span className="fragrance-emboss">
+                <span style={{ maskImage: `url("${import.meta.env.BASE_URL}riiffs/lunar-${id}.svg")` }} />
+              </span>
+            </span>
           </button>)}
         </div>
-        <p>{analyzing ? "One moment…" : "Tap a bottle · or press B / P"}</p>
-        <button className="mirror-text-button" onClick={reset}>Retake</button>
+        <div className="mirror-choice-controls">
+          <h1 className="mirror-choice-title">Find your fragrance</h1>
+          <p>{analyzing ? "One moment…" : "Tap a bottle"}</p>
+          <button className="mirror-text-button" onClick={reset}>Retake</button>
+        </div>
       </section>}
       {phase === "generating" && <GenerationScreen key={treatment} treatment={treatment} elapsed={elapsed} stage={stage} />}
       {phase === "result" && result && <div className={`mirror-result-actions mirror-result-actions--${treatment || "pulse"}`}>

@@ -1,41 +1,51 @@
-import { Component, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Component, Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Environment, MeshTransmissionMaterial, useEnvironment } from "@react-three/drei";
-import { Color } from "three";
+import { Environment, useEnvironment, useGLTF } from "@react-three/drei";
 import BottleAsset from "../glass/BottleAsset.jsx";
+
+const studioEnvironment = { files: `${import.meta.env.BASE_URL}environments/studio_small_03_1k.hdr` };
+
+export function preloadFragranceDisplays() {
+  useEnvironment.preload(studioEnvironment);
+  for (const variant of ["blush", "pulse"]) {
+    useGLTF.preload(`${import.meta.env.BASE_URL}models/lunar-${variant}.glb`);
+  }
+}
 
 class BottleBoundary extends Component {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch() { this.props.onReady(); }
   render() { return this.state.failed ? null : this.props.children; }
 }
-function FloatingBottle({ variant, reducedMotion }) {
-  const group = useRef();
-  const transmissionBackground = useMemo(() => new Color("#030207"), []);
-  useFrame(({clock}) => {
-    const t = reducedMotion ? 0 : clock.elapsedTime;
-    const offset = variant === "blush" ? 0 : 1.7;
-    group.current.position.y = Math.sin(t*.65+offset)*.09;
-    group.current.rotation.set(.04, Math.sin(t*.45+offset)*.14, Math.sin(t*.55+offset)*.045);
+function RotatingBottle({ variant, reducedMotion, onReady }) {
+  const bottle = useRef();
+  const ready = useRef(false);
+  useFrame((_, delta) => {
+    if (!ready.current) {
+      ready.current = true;
+      onReady();
+    }
+    if (!reducedMotion) bottle.current.rotation.y += Math.min(delta, 0.15) * 0.32;
   });
-  return <group ref={group}>
-    <BottleAsset variant={variant} material={<MeshTransmissionMaterial
-      background={transmissionBackground} backside backsideEnvMapIntensity={.25} samples={6} resolution={256} backsideResolution={128}
-      transmission={1} thickness={.28} backsideThickness={.1} roughness={.045} ior={1.4}
-      chromaticAberration={.025} distortion={0} temporalDistortion={0}
-      clearcoat={.7} clearcoatRoughness={.08} envMapIntensity={.35} />}/>
+  return <group ref={bottle} rotation-y={variant === "blush" ? 0.16 : -0.16}>
+    <BottleAsset variant={variant} material={<meshPhysicalMaterial
+      color="#f0e8ff" transparent opacity={0.25} depthWrite={false}
+      roughness={0.12} metalness={0.06} clearcoat={1}
+      clearcoatRoughness={0.08} envMapIntensity={1.25} />}/>
   </group>;
 }
-function BottleStudio({ variant, reducedMotion }) {
-  const environment = useEnvironment({files:`${import.meta.env.BASE_URL}environments/studio_small_03_1k.hdr`});
+function BottleStudio({ variant, reducedMotion, onReady }) {
+  const environment = useEnvironment(studioEnvironment);
   return <>
     <Environment map={environment} background={false} environmentIntensity={.25}/>
     <directionalLight position={[-3,1,-2]} color={variant === "blush" ? "#ff71c8" : "#9f87ff"} intensity={1.4}/>
     <directionalLight position={[3,2,-1]} color={variant === "blush" ? "#ffd0ed" : "#c7c3ff"} intensity={.8}/>
-    <FloatingBottle variant={variant} reducedMotion={reducedMotion}/>
+    <RotatingBottle variant={variant} reducedMotion={reducedMotion} onReady={onReady}/>
   </>;
 }
 export default function FragranceBottle({ variant }) {
+  const [ready, setReady] = useState(false);
   const [reducedMotion,setReducedMotion] = useState(()=>window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   useEffect(()=>{
     const query=window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -43,13 +53,15 @@ export default function FragranceBottle({ variant }) {
     query.addEventListener("change",change);
     return ()=>query.removeEventListener("change",change);
   },[]);
-  return <span className="fragrance-bottle" aria-hidden="true">
-    <BottleBoundary><Canvas camera={{position:[0,0,8.2],fov:32}} dpr={[1,1.5]}
-      gl={{alpha:true,antialias:true,powerPreference:"low-power"}}>
+  const onReady = () => setReady(true);
+  return <span className="fragrance-bottle" aria-hidden="true" data-ready={ready}>
+    <BottleBoundary onReady={onReady}><Canvas camera={{position:[0,0.65,9],fov:29}} dpr={1}
+      frameloop={reducedMotion ? "demand" : "always"}
+      gl={{alpha:true,antialias:true}}>
       <ambientLight intensity={.12}/>
       <directionalLight position={[2,4,5]} intensity={.35}/>
       <Suspense fallback={null}>
-        <BottleStudio variant={variant} reducedMotion={reducedMotion}/>
+        <BottleStudio variant={variant} reducedMotion={reducedMotion} onReady={onReady}/>
       </Suspense>
     </Canvas></BottleBoundary>
   </span>;

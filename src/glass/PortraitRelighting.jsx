@@ -220,8 +220,8 @@ export default function PortraitRelighting({ source, settings, vision, facesRef,
         if (i>=previousCount) u.heads.value[i].copy(headTarget);
         else u.heads.value[i].lerp(headTarget,1-Math.exp(-Math.min(delta,.1)*7));
       }
-      headSeen.current=clock.elapsedTime;
-    } else if (clock.elapsedTime-headSeen.current>.4) u.headCount.value=0;
+      headSeen.current=performance.now();
+    } else if (performance.now()-headSeen.current>400) u.headCount.value=0;
   });
   return <group ref={group} visible={false}>
     <mesh ref={background} renderOrder={-1}>

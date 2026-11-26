@@ -9,51 +9,200 @@
 .mirror-prompt button { pointer-events: auto; }
 .lunar-mirror button:not(.lunar-treatment):not(.mirror-shutter) { border: 1px solid #ffffff55; border-radius: 30px; background: #110b1bd9; color: #fff; padding: 12px 22px; font-size: 16px; }
 .lunar-mirror .mirror-shutter { position: absolute; z-index: 12; bottom: max(5%, env(safe-area-inset-bottom)); left: calc(50% - 60px); width: 120px; height: 120px; border-radius: 50%; background: #ffffffbb; border: 4px solid #fff; box-shadow: 0 0 0 4px #0004, inset 0 0 0 4px #282038; }
-.mirror-choice { position: absolute; z-index: 12; bottom: max(6%, env(safe-area-inset-bottom)); left: 6%; right: 6%; text-align: center; }
-.mirror-choice .lunar-treatment-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 0; }
-.mirror-choice .lunar-treatment { display: block; position: relative; overflow: hidden; padding: 28px 14px; min-height: 100px; border-radius: 18px; }
-.mirror-choice .lunar-treatment strong { font-size: clamp(32px, 6vw, 64px); }
-.mirror-choice p { font-size: 16px; text-shadow: 0 1px 8px #000, 0 1px 3px #000; background: #0c0815b3; border-radius: 22px; padding: 10px 16px; width: fit-content; margin: 16px auto; }
-.mirror-hold { position: absolute; bottom: 0; left: 0; height: 6px; width: 100%; transform-origin: left; transform: scaleX(var(--hold-progress,0)); background: currentColor; transition: transform 130ms linear; }
-.mirror-choice .is-tracking { outline: 3px solid #fff; outline-offset: 4px; }
-.mirror-processing { top: 40%; }
-.mirror-processing .lunar-spinner { display: inline-block; }
 .mirror-result-actions { position: absolute; bottom: 4%; left: 0; right: 0; z-index: 12; display: flex; justify-content: center; gap: 16px; }
 .mirror-error { position: absolute; z-index: 20; top: 3%; left: 5%; right: 5%; padding: 16px; border-radius: 12px; color: #fff; background: #681f3ce8; text-align: center; font-size: 16px; }
 .mirror-dev-tools { position: absolute; z-index: 30; bottom: 10px; left: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; max-width: 90%; padding: 12px; background: #090612ee; font-size: 14px; }
-@media (prefers-reduced-motion: reduce) { .mirror-hold { transition: none; } }
-.mirror-choice-title { font: 400 clamp(26px, 4vw, 42px)/1.15 Georgia, serif; color: #fff; text-align: center; margin: 0 0 22px; text-shadow: 0 2px 8px #080b26, 0 0 24px #ff19bd99; }
-.mirror-choice { padding: 28px 20px 20px; border-radius: 28px; background: linear-gradient(#090d2900,#090d29c9 30%,#090d29ed); }
-.mirror-choice .is-tracking { outline-color: #ff42cc; box-shadow: 0 0 14px #ff19bd99, 0 0 34px #ff19bd44; }
-.mirror-hold { height: 8px; background: #ff19bd; box-shadow: 0 0 14px #ff19bd; }
-/* Real product models sit above the circular targets, extending past their rims. */
-.mirror-choice:has(.fragrance-button) { padding: 22px 12px 14px; }
-.mirror-choice:has(.fragrance-button) .mirror-choice-title { margin-bottom: clamp(36px, 6vh, 72px); }
-.mirror-choice .lunar-treatment-choices:has(.fragrance-button) { gap: clamp(20px, 5vw, 64px); max-width: 720px; margin: 0 auto; }
+/* The portrait and the two product displays share the lower corners. */
+.lunar-experience.lunar-mirror:has(.mirror-choice) {
+  --pullback-duration: 1050ms;
+  --pullback-ease: cubic-bezier(.2, .75, .18, 1);
+  --photo-top: clamp(44px, 8dvh, 100px);
+  --bottle-height: clamp(124px, min(38vw, 32dvh), 330px);
+  --pedestal-face: clamp(120px, 26dvh, 300px);
+  --pedestal-top: clamp(10px, 2dvh, 23px);
+  --display-gap: clamp(85px, 22vw, 210px);
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  color: #292327;
+  background: radial-gradient(ellipse at 50% 40%, #fffafc 18%, #f9edf2 68%, #f1dfe7 100%);
+}
+.lunar-mirror:has(.mirror-choice) .mirror-stage {
+  grid-row: 1;
+  position: relative;
+  inset: auto;
+  min-height: 0;
+  overflow: visible;
+}
+.lunar-mirror:has(.mirror-choice) .lunar-captured-photo {
+  inset: 0 auto auto 50%;
+  width: 100vw;
+  height: 100dvh;
+  transform: translateX(-50%);
+  object-fit: contain;
+}
+.lunar-mirror:has(.mirror-choice):not(:has(.fragrance-bottle[data-ready="false"])) .lunar-captured-photo {
+  top: var(--photo-top);
+  width: min(72vw, 900px);
+  height: max(0px, calc(100% - var(--photo-top) + var(--bottle-height) + 6px));
+  filter: drop-shadow(0 1px 1px #6c59632c) drop-shadow(0 14px 28px #6c596329);
+  animation: mirror-photo-pullback var(--pullback-duration) var(--pullback-ease) both;
+}
+@keyframes mirror-photo-pullback {
+  from { top: 0; width: 100vw; height: 100dvh; filter: none; }
+  99% { filter: none; }
+}
+.mirror-choice {
+  position: relative; grid-row: 2; z-index: 12;
+  width: min(94%, 960px); margin: 0 auto;
+  text-align: center;
+  pointer-events: none;
+}
+.mirror-choice .lunar-treatment-choices {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--display-gap); margin: 0;
+}
 .lunar-experience .mirror-choice button.fragrance-button {
-  --fragrance-accent: #afa1ff;
-  display: flex; flex-direction: column; align-items: center; position: relative;
-  width: 100%; min-width: 0; min-height: 0; padding: 0 0 10px; overflow: visible;
-  border: 0; border-radius: 50% 50% 16px 16px; background: transparent; color: #fff;
-  box-shadow: none; transform: none; isolation: isolate;
+  display: flex; flex-direction: column; align-items: stretch; gap: 0;
+  width: 100%; min-width: 0; min-height: 0; padding: 0;
+  border: 0; border-radius: 8px 8px 0 0; background: transparent; color: #fff;
+  box-shadow: none; transform: none; overflow: visible;
+  visibility: hidden;
 }
-.lunar-experience .mirror-choice button.fragrance-button.lunar-treatment--blush { --fragrance-accent: #ff91d4; }
-.fragrance-frame { display: block; width: 100%; aspect-ratio: 1; border: 2px solid var(--fragrance-accent); border-radius: 50%; background: radial-gradient(circle at 50% 40%,#5e499bba,#131131ef 72%); box-shadow: inset 0 0 24px #ae7eff33,0 0 18px #9a76ff33; transition: box-shadow 220ms, background 220ms; }
-.lunar-treatment--blush .fragrance-frame { background: radial-gradient(circle at 50% 38%,#fff1fa,#eab8d6 72%); box-shadow: inset 0 0 25px #fff8,0 0 20px #ff19bd33; }
-.fragrance-bottle { position: absolute; z-index: 2; top: -18%; left: -15%; width: 130%; height: 110%; pointer-events: none; }
+.mirror-choice .fragrance-button.lunar-treatment--blush { --pedestal-entry-x: -114%; --pedestal-entry-angle: 16deg; }
+.mirror-choice .fragrance-button.lunar-treatment--pulse { --pedestal-entry-x: 114%; --pedestal-entry-angle: -16deg; }
+.lunar-experience .mirror-choice .lunar-treatment-choices:not(:has(.fragrance-bottle[data-ready="false"])) .fragrance-button {
+  visibility: visible;
+  pointer-events: auto;
+  animation: mirror-reveal-pedestal var(--pullback-duration) var(--pullback-ease) both;
+}
+@keyframes mirror-reveal-pedestal {
+  from { transform: perspective(850px) translate3d(var(--pedestal-entry-x), 7%, 160px) rotateY(var(--pedestal-entry-angle)) scale(1.22); }
+  to { transform: perspective(850px) translate3d(0, 0, 0) rotateY(0) scale(1); }
+}
+.fragrance-bottle {
+  position: relative; z-index: 1;
+  display: block; width: 100%; height: var(--bottle-height);
+  pointer-events: none;
+}
 .fragrance-bottle canvas { pointer-events: none; }
-.mirror-choice .fragrance-button strong { position: relative; z-index: 3; margin-top: 20px; font-size: clamp(28px, 5vw, 48px); line-height: 1.05; text-shadow: 0 2px 10px #080b26; }
-.fragrance-select { font-size: 14px; letter-spacing: .12em; text-transform: uppercase; color: var(--fragrance-accent); margin-top: 9px; }
-.fragrance-progress { width: 100%; height: 100%; overflow: visible; transform: rotate(-90deg); }
-.fragrance-progress circle { fill: none; stroke: #fff; stroke-width: 2; stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--hold-progress,0)); filter: drop-shadow(0 0 3px #ff19bd); transition: stroke-dashoffset 130ms linear; }
-.mirror-choice .fragrance-button:hover .fragrance-frame, .mirror-choice .fragrance-button:focus-visible .fragrance-frame, .mirror-choice .fragrance-button.is-tracking .fragrance-frame { box-shadow: 0 0 0 4px #fff7,0 0 32px var(--fragrance-accent),inset 0 0 24px #ffffff33; }
-.mirror-choice .fragrance-button.is-tracking { outline: none; }
-@media (max-height: 650px) and (orientation: landscape) {
-  .mirror-choice .lunar-treatment-choices:has(.fragrance-button) { max-width: 370px; }
-  .mirror-choice:has(.fragrance-button) .mirror-choice-title { margin-bottom: 32px; }
-  .mirror-choice:has(.fragrance-button) { bottom: 2%; }
+.fragrance-pedestal {
+  position: relative;
+  display: block;
+  height: var(--pedestal-face);
+  margin-top: calc(-1 * var(--pedestal-top));
+  padding: calc(var(--pedestal-top) + clamp(15px, 3dvh, 38px)) 12% 0;
+  background:
+    radial-gradient(ellipse at 52% 0%, #fff 0%, #fff0 58%),
+    linear-gradient(101deg, #d9d9db 0%, #f4f4f4 9%, #fff 38%, #f9f9f9 90%, #dadadc 100%);
+  clip-path: polygon(9% 0, 91% 0, 100% var(--pedestal-top), 100% 100%, 0 100%, 0 var(--pedestal-top));
+  pointer-events: none;
 }
-@media (prefers-reduced-motion: reduce) { .fragrance-progress circle, .fragrance-frame { transition: none; } }
+.fragrance-pedestal::before {
+  content: ""; position: absolute; inset: 0 0 auto;
+  height: var(--pedestal-top);
+  background:
+    radial-gradient(ellipse at 50% 30%, #a19b9b85, transparent 41%),
+    linear-gradient(#e3e3e5, #fff 61%, #f7f7f8 95%);
+  box-shadow: 0 1px 2px #8884, 0 3px 10px #ffeed8;
+}
+.fragrance-pedestal::after {
+  content: ""; position: absolute;
+  top: calc(var(--pedestal-top) - 3px); left: 12%; right: 12%; height: 2px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 8px 2px #fff6e4b5;
+}
+.fragrance-emboss {
+  display: block;
+  filter: drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #8d8d8d);
+}
+.fragrance-emboss > span {
+  display: block; height: clamp(11px, 2.8dvh, 29px);
+  background: linear-gradient(#d5d5d5, #f7f7f7);
+  mask: center / contain no-repeat;
+}
+.mirror-choice .fragrance-button:hover:not(:disabled) .fragrance-pedestal { filter: brightness(1.07); }
+.mirror-choice .fragrance-button:focus-visible { outline: 2px solid #796275; outline-offset: 3px; }
+.mirror-choice-controls {
+  position: absolute; bottom: max(10px, env(safe-area-inset-bottom)); left: 50%;
+  width: calc(var(--display-gap) - 10px);
+  transform: translateX(-50%);
+  pointer-events: auto;
+  visibility: hidden;
+}
+.mirror-choice:not(:has(.fragrance-bottle[data-ready="false"])) .mirror-choice-controls {
+  visibility: visible;
+  animation: mirror-choice-fade 350ms ease-out calc(var(--pullback-duration) * .48) both;
+}
+@keyframes mirror-choice-fade { from { opacity: 0; } }
+.mirror-choice-title { font: 400 clamp(14px, 2.7vw, 28px)/1.08 Georgia, serif; margin: 0; }
+.mirror-choice-controls p { font-size: clamp(11px, 1.8vw, 16px); margin: 7px 0 10px; color: #5e5359; }
+.lunar-mirror .mirror-choice-controls button.mirror-text-button,
+.lunar-mirror:has(.mirror-choice) button.mirror-fullscreen-button {
+  border-color: #dcd2d9; background: #ffffffdb; color: #342a32;
+}
+.lunar-mirror .mirror-choice-controls button.mirror-text-button { padding: 8px 12px; font-size: 13px; }
+.lunar-mirror:has(.mirror-choice) button.mirror-fullscreen-button {
+  top: max(12px, env(safe-area-inset-top)); right: auto; left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px; font-size: 13px;
+}
+@media (max-height: 650px) and (orientation: landscape) {
+  .lunar-experience.lunar-mirror:has(.mirror-choice) { --bottle-height: clamp(100px, 42dvh, 210px); --pedestal-face: clamp(78px, 22dvh, 130px); }
+  .mirror-choice { max-width: 680px; }
+}
+
+.lunar-mirror .mirror-countdown {
+  z-index: 19; pointer-events: none;
+  background: radial-gradient(ellipse at center, #130e2999, transparent 62%);
+}
+.mirror-countdown-dial {
+  --dial-size: clamp(138px, 33vmin, 330px);
+  position: relative;
+  display: grid; place-items: center; isolation: isolate;
+  width: var(--dial-size); aspect-ratio: 1;
+  border: 1px solid #f1e5ff8c; border-radius: 50%;
+  box-shadow: 0 0 40px #ba83ff72, inset 0 0 38px #a278eb44;
+}
+.mirror-countdown-dial::before {
+  content: ""; position: absolute; inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #fff var(--countdown-sweep), transparent 0);
+  mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+  animation: mirror-countdown-sweep 1s linear both;
+}
+@property --countdown-sweep { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@keyframes mirror-countdown-sweep { to { --countdown-sweep: 360deg; } }
+.mirror-countdown-number {
+  font: 400 clamp(94px, 22vmin, 220px)/1 Georgia, serif;
+  translate: 0 -.075em;
+  text-shadow: 0 0 30px #bf88ff, 0 2px 18px #1d0928;
+  animation: mirror-countdown-hit 450ms cubic-bezier(.22, 1, .36, 1) both;
+}
+@keyframes mirror-countdown-hit {
+  from { transform: scale(1.42); opacity: .28; }
+}
+.mirror-countdown-cue {
+  position: absolute; top: calc(50% + clamp(84px, 19vmin, 190px));
+  font: 600 clamp(13px, 2.6vmin, 26px)/1.2 "DM Sans", sans-serif;
+  text-transform: uppercase; letter-spacing: .2em;
+  text-shadow: 0 2px 8px #140f27;
+}
+.mirror-countdown[data-final="true"] .mirror-countdown-dial { box-shadow: 0 0 58px #ffd2ecb0, inset 0 0 38px #eb83bb55; }
+.mirror-shutter-flash {
+  position: absolute; inset: 0; z-index: 18; pointer-events: none;
+  background: #fff4fc;
+  animation: mirror-shutter-glint 320ms ease-out both;
+}
+@keyframes mirror-shutter-glint { from { opacity: .68; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .lunar-mirror:has(.mirror-choice):not(:has(.fragrance-bottle[data-ready="false"])) .lunar-captured-photo,
+  .lunar-experience .mirror-choice .lunar-treatment-choices:not(:has(.fragrance-bottle[data-ready="false"])) .fragrance-button,
+  .mirror-choice:not(:has(.fragrance-bottle[data-ready="false"])) .mirror-choice-controls,
+  .mirror-countdown-dial::before, .mirror-countdown-number { animation: none; }
+  .lunar-experience .mirror-choice button.fragrance-button { transform: none; }
+  .mirror-shutter-flash { display: none; }
+}
 /* Give the postcard and QR footer their own space; never cover printed captions. */
 .lunar-mirror.phase-result { display: grid; grid-template-rows: minmax(0, 1fr) auto; }
 .phase-result .mirror-stage { position: relative; inset: auto; width: 100%; height: 100%; min-height: 0; }
@@ -84,8 +233,7 @@
   .mirror-photo-qr { flex-direction: row; padding: 8px 16px 8px 8px; }
   .mirror-photo-qr svg { width: 120px; height: 120px; }
 }
-.fragrance-bottle canvas { filter: drop-shadow(0 0 5px #a28bff55) drop-shadow(0 0 12px #8269ff22); }
-.lunar-treatment--blush .fragrance-bottle canvas { filter: drop-shadow(0 0 5px #ff83cc55) drop-shadow(0 0 12px #ff43b322); }
+.fragrance-bottle canvas { filter: drop-shadow(0 2px 5px #110e2090); }
 
 
 /* Quiet corner signatures stay clear of the portrait and the central actions. */
@@ -114,27 +262,26 @@
 .generation-footer { flex: none; padding: clamp(12px, 1.5vh, 24px) 8% 0; text-align: center; }
 .generation-message { color: #fff; font-size: clamp(20px, 2.8vw, 32px); line-height: 1.45; margin: 0 auto 28px; max-width: 760px; min-height: 2.9em; text-wrap: balance; }
 .generation-progress { height: 5px; overflow: hidden; border-radius: 99px; background: #ffffff24; }
-.generation-progress span { position: relative; overflow: hidden; display: block; width: 100%; height: 100%; background: var(--generation-accent); transform-origin: left; transition: transform 1s linear; }
+.generation-progress span { display: block; width: 100%; height: 100%; background: var(--generation-accent); opacity: .65; }
 .generation-caption { color: #ffffffa8; font-size: clamp(12px, 1.5vw, 16px); margin: 14px 0 0; }
 @media (max-height: 650px) { .generation-screen { padding: 85px 0 16px; } .generation-film { width: min(100%, calc((100dvh - 210px) * .964)); } .generation-footer { padding: 14px 8% 16px; } .generation-message { font-size: 16px; min-height: 0; margin-bottom: 12px; } }
-@media (prefers-reduced-motion: reduce) { .generation-progress span { transition: none; } }
 
 .phase-result[data-treatment="blush"],
 .phase-result[data-treatment="blush"] :is(.mirror-stage, .lunar-portrait-reveal, .lunar-reveal-portrait, .mirror-result-actions) { background: #fff; }
-.phase-result[data-treatment="blush"] .mirror-branding { color: #201820; opacity: 1; }
-.phase-result[data-treatment="blush"] .mirror-branding > div { text-shadow: none; }
-.phase-result[data-treatment="blush"] .mirror-brand-riiffs img { filter: none; mix-blend-mode: normal; }
-.phase-result[data-treatment="blush"] .mirror-lunar-wordmark i { background: linear-gradient(115deg, currentColor 48%, transparent 49%); }
+.lunar-mirror:is(:has(.mirror-choice), .phase-result[data-treatment="blush"]) .mirror-branding { color: #201820; opacity: 1; }
+.lunar-mirror:is(:has(.mirror-choice), .phase-result[data-treatment="blush"]) .mirror-branding > div { text-shadow: none; }
+.lunar-mirror:is(:has(.mirror-choice), .phase-result[data-treatment="blush"]) .mirror-brand-riiffs img { filter: none; mix-blend-mode: normal; }
+.lunar-mirror:is(:has(.mirror-choice), .phase-result[data-treatment="blush"]) .mirror-lunar-wordmark i { background: linear-gradient(115deg, currentColor 48%, transparent 49%); }
 
 @media (prefers-reduced-motion: no-preference) {
-  .generation-progress span::after {
-    content: ""; position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, #fff 50%, transparent);
-    animation: generation-sweep 1.6s linear infinite;
+  .generation-progress span {
+    width: 55%; opacity: 1;
+    background: linear-gradient(90deg, transparent, var(--generation-accent), transparent);
+    animation: generation-sweep 2.4s linear infinite;
   }
   @keyframes generation-sweep {
     from { transform: translateX(-100%); }
-    to { transform: translateX(100%); }
+    to { transform: translateX(182%); }
   }
 }
 

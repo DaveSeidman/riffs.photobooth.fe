@@ -19,12 +19,13 @@ export default function PortraitGlass({
   videoRef,
   facesRef,
   canvasRef,
+  visible,
   recede,
   settings = glassDefaults,
 }) {
   const motionInfo = useRef({rear:0,focusDistance:8});
   const [source, setSource] = useState(null);
-  const vision = useSelfieVision(videoRef, settings.segmentation ?? true, settings);
+  const vision = useSelfieVision(videoRef, settings.segmentation ?? true, settings, visible);
   useEffect(() => {
     const video = videoRef.current;
     if (!video?.videoWidth) return;
@@ -40,9 +41,10 @@ export default function PortraitGlass({
   }, [videoRef]);
   if (!source) return null;
   return (
-    <div className="lunar-glass-preview">
+    <div className="lunar-glass-preview" style={{ visibility: visible ? "visible" : "hidden" }}>
       <GlassBoundary>
         <Canvas
+          frameloop={visible ? "always" : "never"}
           camera={{ position: [0, 0, 8], fov: 38 }}
           dpr={1}
           gl={{

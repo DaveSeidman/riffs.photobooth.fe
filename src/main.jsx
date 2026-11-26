@@ -1,6 +1,9 @@
 import React, {Suspense,lazy,useEffect,useState} from "react";
 import ReactDOM from "react-dom/client";
 import "./base.css";
+if (window.location.hostname !== "localhost") {
+  document.documentElement.classList.add("hide-booth-cursor");
+}
 const LunarExperience=lazy(()=>import('./experience/LunarExperience.jsx'));
 const ReviewGallery=lazy(()=>import('./review/ReviewGallery.jsx'));
 function App() {

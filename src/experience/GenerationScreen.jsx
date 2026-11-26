@@ -4,7 +4,7 @@ import {generationPresentation} from './generationPresentation.js';
 export default function GenerationScreen({treatment,elapsed,stage}) {
   const [videoFailed,setVideoFailed]=useState(false);
   const videoRef = useRef(null);
-  const {mode,message,step,caption}=generationPresentation(treatment,elapsed,stage);
+  const {mode,message,caption}=generationPresentation(treatment,elapsed,stage);
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -23,9 +23,9 @@ export default function GenerationScreen({treatment,elapsed,stage}) {
     </div>
     <div className="generation-footer">
       <p className="generation-message" role="status" aria-live="polite" aria-atomic="true">{message}</p>
-      <div className="generation-progress" role="progressbar" aria-label="Portrait generation stage"
-        aria-valuemin={1} aria-valuemax={4} aria-valuenow={step+1} aria-valuetext={caption}>
-        <span style={{transform:`scaleX(${(step+1)/4})`}} />
+      <div className="generation-progress" role="progressbar" aria-label="Portrait generation"
+        aria-valuetext={caption}>
+        <span />
       </div>
       <p className="generation-caption" role="status">{caption}</p>
     </div>

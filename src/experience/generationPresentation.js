@@ -24,6 +24,5 @@ export function generationPresentation(treatment,elapsed,stage = 'preparing') {
   const mode=treatment==='blush'?'blush':'pulse';
   const seconds=Math.max(0,Number.isFinite(elapsed)?elapsed:0);
   const index=seconds>=45?4:seconds>=26?3:seconds>=16?2:seconds>=8?1:0;
-  const step = Math.max(0, Object.keys(stages).indexOf(stage));
-  return { mode, message: messages[mode][index], step, caption: Object.values(stages)[step] };
+  return { mode, message: messages[mode][index], caption: stages[stage] ?? stages.preparing };
 }

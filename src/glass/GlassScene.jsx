@@ -12,18 +12,16 @@ import BottleAsset from "./BottleAsset.jsx";
 import SwirlSparkles from "./SwirlSparkles.jsx";
 import { easeInOutQuad } from "./settings.js";
 import { createOctagonalGlass } from "./geometry.js";
-import { useFramingLog } from "./useFramingLog.js";
 import PortraitRelighting from "./PortraitRelighting.jsx";
 
 const captureBottle = { z: 1.1, scale: .18, bottomMargin: .24 };
 
 function BoothOrbit({ settings, recede }) {
   const controls = useRef();
-  const events = useFramingLog(controls, settings, recede);
   useEffect(() => {
     controls.current?.reset();
   }, [settings.cameraReset, recede]);
-  return <OrbitControls ref={controls} {...events} makeDefault enabled={(settings.orbit ?? true) && !recede}
+  return <OrbitControls ref={controls} makeDefault enabled={(settings.orbit ?? true) && !recede}
     enablePan={settings.orbitPan ?? true} enableZoom={settings.orbitZoom ?? true}
     enableDamping dampingFactor={0.08} minDistance={3} maxDistance={16} />;
 }

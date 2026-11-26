@@ -16,7 +16,7 @@ export function useBoothInactivity(phase,onTimeout,delayMs) {
     const activity=event=>{
       if(event.isTrusted===false)return;
       if(event.type==='pointermove' && !event.buttons)return;
-      if(event.target?.closest?.('.booth, .operator-panel'))idle.activity();
+      if(event.target?.closest?.('.booth, .lunar-mirror, .operator-panel'))idle.activity();
     };
     const events=['pointerdown','pointerup','pointermove','touchstart','touchend','touchmove','keydown','input'];
     for(const name of events)document.addEventListener(name,activity,{capture:true,passive:true});

@@ -3,9 +3,11 @@ import { DataTexture, LinearFilter, RedFormat, UnsignedByteType } from "three";
 
 import { blurMask, blendMask } from "./maskSmoothing.js";
 
-export function useSelfieVision(videoRef, enabled, settings = {}) {
+export function useSelfieVision(videoRef, enabled, settings = {}, visible = true) {
   const options = useRef(settings);
+  const previewVisible = useRef(visible);
   options.current = settings;
+  previewVisible.current = visible;
   const vision = useRef({ ready: false, texture: null, frames: 0, status: "off" });
   useEffect(() => {
     if (!enabled) { vision.current.ready = false; return; }
@@ -22,13 +24,14 @@ export function useSelfieVision(videoRef, enabled, settings = {}) {
     const tick = async (time) => {
       if (cancelled) return;
       animation = requestAnimationFrame(tick);
-      if (target) {
+      if (target && previewVisible.current) {
         blendMask(current, target, output, Math.min(100, time - (renderTime || time)), options.current.maskSmoothingMs ?? 160);
         texture.needsUpdate = true;
       }
       renderTime = time;
       const video = videoRef.current;
-      if (busy || time - last < 66 || !video?.videoWidth || video.paused || document.hidden) return;
+      const interval = previewVisible.current ? 66 : 300;
+      if (busy || time - last < interval || !video?.videoWidth || video.paused || document.hidden) return;
       last = time;
       busy = true;
       try {
@@ -54,6 +57,9 @@ export function useSelfieVision(videoRef, enabled, settings = {}) {
           current = new Float32Array(target);
           output = new Uint8Array(target);
           texture.image = {data:output, width, height};
+        } else if (!previewVisible.current) {
+          current.set(target);
+          output.set(target);
         }
         texture.needsUpdate = true;
         vision.current.ready = true;

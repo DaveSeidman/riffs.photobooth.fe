@@ -19,11 +19,11 @@ export function useBoothControls() {
   }, []);
   const values = useControls({
     Camera: folder({
+      "Toggle perfume selection": button(() => window.dispatchEvent(new Event("lunar:toggle-perfume-selection"))),
       orbit: { value: true, label: "Orbit controls" },
       orbitPan: { value: true, label: "Allow pan" },
       orbitZoom: { value: true, label: "Allow zoom" },
       "Reset camera": button(() => setCameraReset((n) => n + 1)),
-      "Save framing": button(() => window.dispatchEvent(new Event("lunar:save-framing"))),
     }),
     "Fragrance background": folder({
       autoFragranceCycle: { value: true, label: "Auto Blush / Pulse" },
